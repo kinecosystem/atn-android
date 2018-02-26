@@ -8,16 +8,16 @@ class Initializer {
 
     private ATNThreadHandler atnThreadHandler;
 
-    private void init(Context context) {
-        atnThreadHandler = new ATNThreadHandler(context);
-        atnThreadHandler.start();
+    boolean isInitialized(Context context) {
+        initIfNeeded(context);
+        return atnThreadHandler.isInitialized();
     }
 
-    boolean isInitialized(Context context) {
-        if (atnThreadHandler == null || !atnThreadHandler.isInitialized()) {
-            init(context);
+    private synchronized void initIfNeeded(Context context) {
+        if (atnThreadHandler == null) {
+            atnThreadHandler = new ATNThreadHandler(context);
+            atnThreadHandler.start();
         }
-        return true;
     }
 
     Handler getHandler() {

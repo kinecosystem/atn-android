@@ -12,7 +12,7 @@ class ConfigurationProvider {
         return 0;
     }
 
-    String ATNAddres() {
+    String ATNAddress() {
 
         return null;
     }

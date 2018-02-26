@@ -11,24 +11,24 @@ import kin.core.KinAccount;
 
 class ATNThreadHandler extends HandlerThread {
 
-    private final ConfigurationProvider configurationProvider;
+    private final Context context;
+    private final EventLogger eventLogger;
+    private volatile boolean isInitialized = false;
     private Handler handler;
-    private final ATNAccountCreator accountCreator;
-    private boolean isInitialized;
     private ATNSender atnSender;
     private ATNReceiver afnReceiver;
 
-    public ATNThreadHandler(Context context) {
+    ATNThreadHandler(Context context) {
         super("ATNThreadHandler");
 
+        this.context = context;
+        this.eventLogger = new EventLogger();
         setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
                 handleUncaughtException(throwable);
             }
         });
-        configurationProvider = new ConfigurationProvider();
-        accountCreator = new ATNAccountCreator(context);
     }
 
     private class ATNHandler extends Handler {
@@ -38,7 +38,6 @@ class ATNThreadHandler extends HandlerThread {
 
         @Override
         public void handleMessage(Message msg) {
-
             switch (msg.what) {
                 case Dispatcher.MSG_RECIEVE:
                     afnReceiver.receiveATN();
@@ -51,20 +50,24 @@ class ATNThreadHandler extends HandlerThread {
     }
 
     private void handleUncaughtException(Throwable throwable) {
-
+        eventLogger.sendErrorEvent("uncaught_exception", throwable);
     }
 
     @Override
     public void run() {
+        ConfigurationProvider configurationProvider = new ConfigurationProvider();
+        ATNServer atnServer = new ATNServer();
+
         configurationProvider.init();
         if (configurationProvider.enabled()) {
+            ATNAccountCreator accountCreator = new ATNAccountCreator(context, eventLogger, atnServer);
+
             KinAccount account = accountCreator.create();
+            atnSender = new ATNSender(account, configurationProvider.ATNAddress(), eventLogger);
+            afnReceiver = new ATNReceiver(atnServer, eventLogger, account.getPublicAddress());
             handler = new ATNHandler(getLooper());
-            atnSender = new ATNSender(account, configurationProvider.ATNAddres());
-            afnReceiver = new ATNReceiver(account);
             isInitialized = true;
         }
-
     }
 
     boolean isInitialized() {

@@ -2,8 +2,6 @@ package com.kik.atn;
 
 
 import java.math.BigDecimal;
-import java.security.cert.TrustAnchor;
-import java.util.HashMap;
 
 import kin.core.KinAccount;
 
@@ -13,7 +11,7 @@ class ATNSender {
     private final String atnAddress;
     private final EventLogger eventLogger;
 
-    public ATNSender(KinAccount account, String atnAddress, EventLogger eventLogger) {
+    ATNSender(KinAccount account, String atnAddress, EventLogger eventLogger) {
         this.account = account;
         this.atnAddress = atnAddress;
         this.eventLogger = eventLogger;
@@ -25,7 +23,6 @@ class ATNSender {
             long start = System.nanoTime();
             account.sendTransactionSync(atnAddress, "", new BigDecimal(1.0));
             long duration = (System.nanoTime() - start) / 1000;
-
             eventLogger.sendDurationEvent("sendATNSucceed", duration);
         } catch (Exception ex) {
             eventLogger.sendErrorEvent("sendATNFailed", ex);
