@@ -18,7 +18,7 @@ class ATNSender {
     }
 
     void sendATN() {
-        eventLogger.sendEvent("sendATN", null);
+        eventLogger.sendEvent("sendATN");
         try {
             long start = System.nanoTime();
             account.sendTransactionSync(atnAddress, "", new BigDecimal(1.0));

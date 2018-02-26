@@ -13,6 +13,7 @@ class ATNThreadHandler extends HandlerThread {
 
     private final Context context;
     private final EventLogger eventLogger;
+    private final ATNServer atnServer;
     private volatile boolean isInitialized = false;
     private Handler handler;
     private ATNSender atnSender;
@@ -22,7 +23,8 @@ class ATNThreadHandler extends HandlerThread {
         super("ATNThreadHandler");
 
         this.context = context;
-        this.eventLogger = new EventLogger();
+        atnServer = new ATNServer();
+        this.eventLogger = new EventLogger(atnServer, new AndroidLogger());
         setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
@@ -56,7 +58,6 @@ class ATNThreadHandler extends HandlerThread {
     @Override
     public void run() {
         ConfigurationProvider configurationProvider = new ConfigurationProvider();
-        ATNServer atnServer = new ATNServer();
 
         configurationProvider.init();
         if (configurationProvider.enabled()) {

@@ -1,6 +1,8 @@
 package com.kik.atn;
 
 
+import java.io.IOException;
+
 class ATNReceiver {
 
     private final ATNServer atnServer;
@@ -15,10 +17,10 @@ class ATNReceiver {
 
     void receiveATN() {
         eventLogger.sendEvent("receive_atn");
-        boolean success = atnServer.receiveATN(publicKey);
-        if (success) {
+        try {
+            atnServer.receiveATN(publicKey);
             eventLogger.sendEvent("receive_atn_succeed");
-        } else {
+        } catch (IOException e) {
             eventLogger.sendEvent("receive_atn_failed");
         }
     }

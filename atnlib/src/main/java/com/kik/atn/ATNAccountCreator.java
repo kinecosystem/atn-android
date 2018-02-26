@@ -3,6 +3,8 @@ package com.kik.atn;
 
 import android.content.Context;
 
+import java.io.IOException;
+
 import kin.core.KinAccount;
 import kin.core.KinClient;
 import kin.core.ServiceProvider;
@@ -27,24 +29,13 @@ class ATNAccountCreator {
 
         long start = System.nanoTime();
         KinAccount account = addAccount();
-        if (account != null)
-            if (atnServer.fundWithXLM(account.getPublicAddress())) {
-                try {
-                    account.activateSync("");
-                    if (atnServer.fundWithATN(account.getPublicAddress())) {
-                        long duration = (System.nanoTime() - start) / 1000;
-                        eventLogger.sendDurationEvent("account_created", duration);
-                        return account;
-                    } else {
-                        eventLogger.sendEvent("fund_atn_failed", null);
-                    }
-                } catch (OperationFailedException e) {
-                    eventLogger.sendErrorEvent("activate_failed", e);
-                }
-            } else {
-                eventLogger.sendEvent("fund_xlm_failed", null);
+        if (account != null) {
+            if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
+                long duration = (System.nanoTime() - start) / 1000;
+                eventLogger.sendDurationEvent("account_created", duration);
             }
-        return null;
+        }
+        return account;
     }
 
     private void createKinClient() {
@@ -62,4 +53,36 @@ class ATNAccountCreator {
         }
         return account;
     }
+
+    private boolean fundWithXLM(KinAccount account) {
+        try {
+            atnServer.fundWithXLM(account.getPublicAddress());
+            return true;
+        } catch (IOException e) {
+            eventLogger.sendErrorEvent("fund_xlm_failed", e);
+        }
+        return false;
+    }
+
+    private boolean activateAccount(KinAccount account) {
+        try {
+            account.activateSync("");
+            return true;
+        } catch (OperationFailedException e) {
+            eventLogger.sendErrorEvent("activate_failed", e);
+        }
+        return false;
+    }
+
+    private boolean fundWithATN(KinAccount account) {
+        try {
+            atnServer.fundWithATN(account.getPublicAddress());
+            return true;
+        } catch (IOException e) {
+            eventLogger.sendErrorEvent("fund_xlm_failed", e);
+        }
+        return false;
+    }
+
+
 }
