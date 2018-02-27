@@ -7,13 +7,11 @@ class ConfigurationProvider {
 
     private final ATNServer server;
     private final EventLogger eventLogger;
-    private final String publicAddress;
     private Config config;
 
-    ConfigurationProvider(ATNServer server, EventLogger eventLogger, String publicAddress) {
+    ConfigurationProvider(ATNServer server, EventLogger eventLogger) {
         this.server = server;
         this.eventLogger = eventLogger;
-        this.publicAddress = publicAddress;
     }
 
     boolean enabled() {
@@ -24,7 +22,7 @@ class ConfigurationProvider {
         return config.getAtnAddress();
     }
 
-    void init() {
+    void init(String publicAddress) {
         try {
             config = server.getConfiguration(publicAddress);
         } catch (IOException e) {

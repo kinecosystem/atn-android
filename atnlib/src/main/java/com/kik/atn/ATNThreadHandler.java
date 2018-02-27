@@ -18,7 +18,10 @@ class ATNThreadHandler extends HandlerThread {
         super("ATNThreadHandler");
         ATNServer atnServer = new ATNServer();
         this.eventLogger = new EventLogger(atnServer, new AndroidLogger());
-        sessionCreator = new ATNSessionCreator(eventLogger, atnServer, new KinAccountCreator(context, eventLogger));
+        sessionCreator = new ATNSessionCreator(eventLogger, atnServer,
+                new KinAccountCreator(context, eventLogger),
+                new ConfigurationProvider(atnServer, eventLogger),
+                new ATNAccountOnBoarding(eventLogger, atnServer));
         setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {

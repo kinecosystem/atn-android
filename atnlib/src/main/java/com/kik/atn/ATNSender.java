@@ -26,18 +26,19 @@ class ATNSender {
             account.sendTransactionSync(atnAddress, "", new BigDecimal(1.0));
             durationLogger.report("send_atn_succeed");
         } catch (Exception ex) {
-            handleUnderfundedError(ex);
-            eventLogger.sendErrorEvent("send_atn_failed", ex);
+            if (ex instanceof TransactionFailedException) {
+                reportUnderfundedError(ex);
+            } else {
+                eventLogger.sendErrorEvent("send_atn_failed", ex);
+            }
         }
     }
 
-    private void handleUnderfundedError(Exception ex) {
-        if (ex instanceof TransactionFailedException) {
-            TransactionFailedException tfe = (TransactionFailedException) ex;
-            List<String> resultCodes = tfe.getOperationsResultCodes();
-            if (resultCodes != null && resultCodes.size() > 0 && "underfunded".equals(resultCodes.get(0))) {
-                eventLogger.sendEvent("underfunded");
-            }
+    private void reportUnderfundedError(Exception ex) {
+        TransactionFailedException tfe = (TransactionFailedException) ex;
+        List<String> resultCodes = tfe.getOperationsResultCodes();
+        if (resultCodes != null && resultCodes.size() > 0 && "underfunded".equals(resultCodes.get(0))) {
+            eventLogger.sendEvent("underfunded");
         }
     }
 }

@@ -9,10 +9,13 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
 
 import kin.core.KinAccount;
 import kin.core.TransactionId;
 import kin.core.exception.OperationFailedException;
+import kin.core.exception.TransactionFailedException;
 
 import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,14 +37,15 @@ public class ATNSenderTest {
             return "1dd0051db7beaf02507ca0d95381bc44ce0f387c2ade3f8aa9a20f3101f13f76";
         }
     };
-    @Mock private KinAccount mockKinAccount;
-    @Mock private EventLogger mockEventLogger;
+    @Mock
+    private KinAccount mockKinAccount;
+    @Mock
+    private EventLogger mockEventLogger;
     private ATNSender sender;
 
 
     @Before
     public void setup() {
-
         MockitoAnnotations.initMocks(this);
 
         sender = new ATNSender(mockKinAccount, mockEventLogger, ATN_ADDRESS);
@@ -90,5 +94,19 @@ public class ATNSenderTest {
 
         verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
         verify(mockEventLogger).sendErrorEvent("send_atn_failed", expectedException);
+    }
+
+    @Test
+    public void sendATN_SendTransactionNotEnoughFunds_Report() throws Exception {
+        OperationFailedException expectedException = new TransactionFailedException(
+                "op_failed", Collections.singletonList("underfunded")
+        );
+        when(mockKinAccount.sendTransactionSync(anyString(), anyString(), (BigDecimal) any()))
+                .thenThrow(expectedException);
+
+        sender.sendATN();
+
+        verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
+        verify(mockEventLogger).sendEvent("underfunded");
     }
 }
