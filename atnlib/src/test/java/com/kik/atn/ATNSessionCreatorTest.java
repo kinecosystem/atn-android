@@ -7,7 +7,9 @@ import org.mockito.MockitoAnnotations;
 
 import kin.core.KinAccount;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -37,8 +39,8 @@ public class ATNSessionCreatorTest {
     @Test
     public void create_AccountCreatorFailure_NotCreated() throws Exception {
         when(mockKinAccountCreator.getAccount()).thenReturn(null);
-        boolean created = sessionCreator.create();
-        assertFalse(created);
+
+        assertFalse(sessionCreator.create());
     }
 
     @Test
@@ -46,17 +48,27 @@ public class ATNSessionCreatorTest {
         when(mockKinAccountCreator.getAccount()).thenReturn(mockKinAccount);
         when(mockConfigurationProvider.enabled()).thenReturn(false);
 
-        boolean created = sessionCreator.create();
-        assertFalse(created);
+        assertFalse(sessionCreator.create());
     }
+
     @Test
     public void create_OnBoardingFailure_NotCreated() throws Exception {
         when(mockKinAccountCreator.getAccount()).thenReturn(mockKinAccount);
         when(mockConfigurationProvider.enabled()).thenReturn(true);
         when(mockOnBoarding.onBoard((KinAccount) any())).thenReturn(false);
 
-        boolean created = sessionCreator.create();
-        assertFalse(created);
+        assertFalse(sessionCreator.create());
+    }
+
+    @Test
+    public void create_Success_Created() throws Exception {
+        when(mockKinAccountCreator.getAccount()).thenReturn(mockKinAccount);
+        when(mockConfigurationProvider.enabled()).thenReturn(true);
+        when(mockOnBoarding.onBoard((KinAccount) any())).thenReturn(true);
+
+        assertTrue(sessionCreator.create());
+        assertNotNull(sessionCreator.getATNReceiver());
+        assertNotNull(sessionCreator.getATNSender());
     }
 
 }

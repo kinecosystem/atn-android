@@ -9,7 +9,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 
 import kin.core.KinAccount;
@@ -71,7 +70,7 @@ public class ATNSenderTest {
                 .thenAnswer(new Answer<TransactionId>() {
                     @Override
                     public TransactionId answer(InvocationOnMock invocation) throws Throwable {
-                        sleep(1000);
+                        sleep(1005);
                         return dummyTransactionId;
                     }
                 });
