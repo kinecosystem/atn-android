@@ -25,8 +25,8 @@ class ATNSessionCreator {
             ConfigurationProvider configurationProvider = new ConfigurationProvider(atnServer, eventLogger, publicAddress);
             configurationProvider.init();
             if (configurationProvider.enabled()) {
-                ATNAccountOnborading accountCreator = new ATNAccountOnborading(eventLogger, atnServer);
-                if (accountCreator.onboard(account)) {
+                ATNAccountOnBoarding accountCreator = new ATNAccountOnBoarding(eventLogger, atnServer);
+                if (accountCreator.onBoard(account)) {
                     atnSender = new ATNSender(account, configurationProvider.ATNAddress(), eventLogger);
                     afnReceiver = new ATNReceiver(atnServer, eventLogger, publicAddress);
                     return true;

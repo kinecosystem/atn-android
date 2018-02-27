@@ -6,17 +6,17 @@ import java.io.IOException;
 import kin.core.KinAccount;
 import kin.core.exception.OperationFailedException;
 
-class ATNAccountOnborading {
+class ATNAccountOnBoarding {
 
     private final EventLogger eventLogger;
     private final ATNServer atnServer;
 
-    ATNAccountOnborading(EventLogger eventLogger, ATNServer atnServer) {
+    ATNAccountOnBoarding(EventLogger eventLogger, ATNServer atnServer) {
         this.eventLogger = eventLogger;
         this.atnServer = atnServer;
     }
 
-    boolean onboard(KinAccount account) {
+    boolean onBoard(KinAccount account) {
         long start = System.nanoTime();
         if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
             long duration = (System.nanoTime() - start) / 1000;
