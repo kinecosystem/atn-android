@@ -10,14 +10,14 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 class Dispatcher {
 
-    static final int MSG_RECIEVE = 0;
+    static final int MSG_RECEIVE = 0;
     static final int MSG_SENT = 1;
 
-    public Dispatcher() {
+    Dispatcher() {
     }
 
     @Retention(SOURCE)
-    @IntDef({MSG_RECIEVE, MSG_SENT})
+    @IntDef({MSG_RECEIVE, MSG_SENT})
     @interface MessageType {
     }
 

@@ -7,7 +7,8 @@ import java.util.Map;
 
 class AndroidLogger {
 
-    private static boolean SHOULD_LOG = BuildConfig.DEBUG || Log.isLoggable("atnlib", Log.DEBUG);
+    private static final String TAG = "atnlib";
+    private static boolean SHOULD_LOG = BuildConfig.DEBUG || Log.isLoggable(TAG, Log.DEBUG);
 
     void log(Event event) {
         if (SHOULD_LOG) {
@@ -19,7 +20,7 @@ class AndroidLogger {
                         .append(" ");
             }
 
-            Log.d("atnlib", log.toString());
+            Log.d(TAG, log.toString());
         }
     }
 

@@ -16,13 +16,13 @@ class EventLogger {
     }
 
     void sendEvent(String name) {
-        Event event = new Event(name, "event", publicAddress);
+        Event event = new Event(name, Event.TYPE_EVENT, publicAddress);
         sendEvent(event);
     }
 
     void sendDurationEvent(String name, long duration) {
-        Event event = new Event(name, "operation_duration", publicAddress);
-        event.addField("duration", duration);
+        Event event = new Event(name, Event.TYPE_DURATION, publicAddress)
+                .addField("duration", duration);
         sendEvent(event);
     }
 
@@ -36,15 +36,14 @@ class EventLogger {
     }
 
     void sendErrorEvent(String name, Throwable throwable) {
-        Event event = new Event(name, "error", publicAddress);
-        event.addField("exception_type", throwable.getClass().getSimpleName());
-        event.addField("exception_msg", throwable.toString());
+        Event event = new Event(name, Event.TYPE_ERROR, publicAddress)
+                .addField("exception_type", throwable.getClass().getSimpleName())
+                .addField("exception_msg", throwable.toString());
 
         sendEvent(event);
     }
 
-
-    public void setPublicAddress(String publicAddress) {
+    void setPublicAddress(String publicAddress) {
         this.publicAddress = publicAddress;
     }
 }

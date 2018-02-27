@@ -2,8 +2,10 @@ package com.kik.atn;
 
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import kin.core.KinAccount;
+import kin.core.exception.TransactionFailedException;
 
 class ATNSender {
 
@@ -18,14 +20,25 @@ class ATNSender {
     }
 
     void sendATN() {
-        eventLogger.sendEvent("sendATN");
+        eventLogger.sendEvent("send_atn_started");
         try {
             long start = System.nanoTime();
             account.sendTransactionSync(atnAddress, "", new BigDecimal(1.0));
             long duration = (System.nanoTime() - start) / 1000;
-            eventLogger.sendDurationEvent("sendATNSucceed", duration);
+            eventLogger.sendDurationEvent("send_atn_succeed", duration);
         } catch (Exception ex) {
-            eventLogger.sendErrorEvent("sendATNFailed", ex);
+            handleUnderfundedError(ex);
+            eventLogger.sendErrorEvent("send_atn_failed", ex);
+        }
+    }
+
+    private void handleUnderfundedError(Exception ex) {
+        if (ex instanceof TransactionFailedException) {
+            TransactionFailedException tfe = (TransactionFailedException) ex;
+            List<String> resultCodes = tfe.getOperationsResultCodes();
+            if (resultCodes != null && resultCodes.size() > 0 && "underfunded".equals(resultCodes.get(0))) {
+                eventLogger.sendEvent("underfunded");
+            }
         }
     }
 }

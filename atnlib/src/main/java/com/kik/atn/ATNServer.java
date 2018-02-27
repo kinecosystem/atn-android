@@ -1,6 +1,7 @@
 package com.kik.atn;
 
 
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -21,11 +22,12 @@ import okhttp3.ResponseBody;
 class ATNServer {
 
     private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final String URL_CREATE_ACCOUNT = "http://188.166.34.7:8000/create_account";
-    private static final String URL_FUND = "http://188.166.34.7:8000/fund";
-    private static final String URL_SEND_EVENT = "http://188.166.34.7:8000/fund";
-    private static final String URL_GET_CONFIGURATION = "http://188.166.34.7:8000/fund";
-    private static final String JSON_KEY_PUBLIC_ADDRESS = "public_address";
+    private static final String URL_BASE = "http://188.166.34.7:8000/";
+    private static final String URL_CREATE_ACCOUNT = URL_BASE + "accounts/%s";
+    private static final String URL_FUND = URL_BASE + "accounts/%s/fundings";
+    private static final String URL_CLAIM_ATN = URL_BASE + "accounts/%s/claims";
+    private static final String URL_SEND_EVENT = URL_BASE + "events";
+    private static final String URL_GET_CONFIGURATION = URL_BASE + "config/%s";
     private final OkHttpClient okHttpClient;
     private final Gson gson;
 
@@ -36,18 +38,21 @@ class ATNServer {
                 .writeTimeout(20, TimeUnit.SECONDS)
                 .build();
         gson = new GsonBuilder().create();
+
     }
 
     void fundWithXLM(String publicAddress) throws IOException {
-        sendPublicAddressRequest(publicAddress, URL_CREATE_ACCOUNT);
+        FundWithXlmRequest fundWithXlmRequest = new FundWithXlmRequest();
+        String requestContent = gson.toJson(fundWithXlmRequest, FundWithXlmRequest.class);
+        sendPublicAddressRequest(publicAddress, requestContent, URL_CREATE_ACCOUNT);
     }
 
     void fundWithATN(String publicAddress) throws IOException {
-        sendPublicAddressRequest(publicAddress, URL_FUND);
+        sendPublicAddressRequest(publicAddress, "", URL_FUND);
     }
 
     void receiveATN(String publicAddress) throws IOException {
-        sendPublicAddressRequest(publicAddress, URL_FUND);
+        sendPublicAddressRequest(publicAddress, "", URL_CLAIM_ATN);
     }
 
     void sendEvent(Event event) throws IOException {
@@ -55,10 +60,9 @@ class ATNServer {
         sendPostRequest(json, URL_SEND_EVENT);
     }
 
-    private void sendPublicAddressRequest(String publicAddress, String url) throws IOException {
-        PublicKeyQuery publicKeyQuery = new PublicKeyQuery(publicAddress);
-        String json = gson.toJson(publicKeyQuery, publicKeyQuery.getClass());
-        sendPostRequest(json, url);
+    private void sendPublicAddressRequest(String publicAddress, String requestContent, String urlFormat) throws IOException {
+        String url = String.format(urlFormat, publicAddress);
+        sendPostRequest(requestContent, url);
     }
 
     @NonNull
@@ -76,14 +80,14 @@ class ATNServer {
         int code = response.code();
         response.close();
         if (code != 200) {
-            throw new HttpResponseException(response.code(), "Error Response code " + response.code());
+            throw new HttpResponseException(response.code());
         }
     }
 
     @Nullable
-    Event getConfiguration() throws IOException {
+    Config getConfiguration(String publicAddress) throws IOException {
         Request request = new Request.Builder()
-                .url(URL_GET_CONFIGURATION)
+                .url(String.format(URL_GET_CONFIGURATION, publicAddress))
                 .get()
                 .build();
         Response response = okHttpClient.newCall(request)
@@ -94,40 +98,28 @@ class ATNServer {
             ResponseBody body = response.body();
             if (body != null) {
                 String configString = body.string();
-                return gson.fromJson(configString, Event.class);
+                return gson.fromJson(configString, Config.class);
             } else {
                 return null;
             }
         } else {
-            throw new HttpResponseException(response.code(), "Error Response code " + response.code());
+            throw new HttpResponseException(response.code());
         }
 
     }
 
-    private static class PublicKeyQuery {
+    @SuppressWarnings("unused")
+    private static class FundWithXlmRequest {
+        @SerializedName("sdk_level")
+        private final int sdkLevel;
+        private final String model;
+        private final String manufacturer;
 
-        @SerializedName("public_address")
-        private final String publicAddress;
 
-        PublicKeyQuery(String publicAddress) {
-            this.publicAddress = publicAddress;
-        }
-
-        public String getPublicAddress() {
-            return publicAddress;
-        }
-    }
-
-    class HttpResponseException extends IOException {
-        private final int statusCode;
-
-        public HttpResponseException(int statusCode, String msg) {
-            super(msg);
-            this.statusCode = statusCode;
-        }
-
-        public int getStatusCode() {
-            return this.statusCode;
+        private FundWithXlmRequest() {
+            this.sdkLevel = Build.VERSION.SDK_INT;
+            this.model = Build.MODEL;
+            this.manufacturer = Build.MANUFACTURER;
         }
     }
 }

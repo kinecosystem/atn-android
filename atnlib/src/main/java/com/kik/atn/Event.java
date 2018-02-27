@@ -11,18 +11,26 @@ import java.util.Map;
 
 class Event {
 
+    final static String TYPE_EVENT = "event";
+    final static String TYPE_ERROR = "error";
+    final static String TYPE_DURATION = "operation_duration";
+    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String name;
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String timestamp;
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String type;
     @SerializedName("public_address")
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String publicAddress;
     private final Payload payload = new Payload();
 
 
     Event(String name, String type, String publicAddress) {
         this.name = name;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
-        this.timestamp = simpleDateFormat.format(new Date());
+        this.timestamp = dateFormat.format(new Date());
         this.type = type;
         this.publicAddress = publicAddress;
     }
@@ -32,15 +40,7 @@ class Event {
         return this;
     }
 
-    public String getPublicAddress() {
-        return publicAddress;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Map<String, Object> getFields() {
+    Map<String, Object> getFields() {
         return payload.getPayload();
     }
 
@@ -51,7 +51,7 @@ class Event {
             payload.put(key, value);
         }
 
-        public Map<String, Object> getPayload() {
+        Map<String, Object> getPayload() {
             return payload;
         }
     }

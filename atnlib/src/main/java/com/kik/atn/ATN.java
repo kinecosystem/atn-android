@@ -21,7 +21,7 @@ public class ATN {
 
     void onMessageRecieve(Context context) {
         if (initializer.isInitialized(context.getApplicationContext())) {
-            dispatcher.dispatch(initializer.getHandler(), Dispatcher.MSG_RECIEVE);
+            dispatcher.dispatch(initializer.getHandler(), Dispatcher.MSG_RECEIVE);
         }
     }
 }

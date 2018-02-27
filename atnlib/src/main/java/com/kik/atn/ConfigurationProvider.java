@@ -1,40 +1,36 @@
 package com.kik.atn;
 
 
+import java.io.IOException;
+
 class ConfigurationProvider {
 
-    private static final String KEY_ENABLED = "enabled";
-    private static final String KEY_RATE_LIMIT = "rate_limit";
-    private static final String KEY_ATN_ADDRESS = "atn_address";
-    private static final String KEY_SEND_AMOUNT = "send_amount";
+    private final ATNServer server;
+    private final EventLogger eventLogger;
+    private final String publicAddress;
+    private Config config;
 
-    private Event event;
-
-    ConfigurationProvider() {
-
+    ConfigurationProvider(ATNServer server, EventLogger eventLogger, String publicAddress) {
+        this.server = server;
+        this.eventLogger = eventLogger;
+        this.publicAddress = publicAddress;
     }
 
     boolean enabled() {
-
-        return false;
-    }
-
-    int rateLimit() {
-        return 0;
+        return config.isEnabled();
     }
 
     String ATNAddress() {
-
-        return null;
-    }
-
-    int ATNSendAmount() {
-
-        return 0;
+        return config.getAtnAddress();
     }
 
     void init() {
-
+        try {
+            config = server.getConfiguration(publicAddress);
+        } catch (IOException e) {
+            config = new Config(false, null);
+            eventLogger.sendErrorEvent("get_config_failed", e);
+        }
     }
 
 }
