@@ -17,10 +17,9 @@ class ATNAccountOnBoarding {
     }
 
     boolean onBoard(KinAccount account) {
-        long start = System.nanoTime();
+        EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
         if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
-            long duration = (System.nanoTime() - start) / 1000;
-            eventLogger.sendDurationEvent("account_created", duration);
+            durationLogger.report("account_created");
             return true;
         }
         return false;

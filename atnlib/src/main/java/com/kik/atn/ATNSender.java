@@ -13,7 +13,7 @@ class ATNSender {
     private final String atnAddress;
     private final EventLogger eventLogger;
 
-    ATNSender(KinAccount account, String atnAddress, EventLogger eventLogger) {
+    ATNSender(KinAccount account, EventLogger eventLogger, String atnAddress) {
         this.account = account;
         this.atnAddress = atnAddress;
         this.eventLogger = eventLogger;
@@ -22,10 +22,9 @@ class ATNSender {
     void sendATN() {
         eventLogger.sendEvent("send_atn_started");
         try {
-            long start = System.nanoTime();
+            EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
             account.sendTransactionSync(atnAddress, "", new BigDecimal(1.0));
-            long duration = (System.nanoTime() - start) / 1000;
-            eventLogger.sendDurationEvent("send_atn_succeed", duration);
+            durationLogger.report("send_atn_succeed");
         } catch (Exception ex) {
             handleUnderfundedError(ex);
             eventLogger.sendErrorEvent("send_atn_failed", ex);

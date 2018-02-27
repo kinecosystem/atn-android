@@ -20,6 +20,10 @@ class EventLogger {
         sendEvent(event);
     }
 
+    DurationLogger startDurationLogging() {
+        return new DurationLogger();
+    }
+
     void sendDurationEvent(String name, long duration) {
         Event event = new Event(name, Event.TYPE_DURATION, publicAddress)
                 .addField("duration", duration);
@@ -41,6 +45,20 @@ class EventLogger {
                 .addField("exception_msg", throwable.toString());
 
         sendEvent(event);
+    }
+
+    class DurationLogger {
+        private static final int NANOS_IN_MILLI = 1000000;
+        private long start;
+
+        DurationLogger() {
+            start = System.nanoTime();
+        }
+
+        void report(String name) {
+            long duration = (System.nanoTime() - start) / NANOS_IN_MILLI;
+            sendDurationEvent(name, duration);
+        }
     }
 
     void setPublicAddress(String publicAddress) {
