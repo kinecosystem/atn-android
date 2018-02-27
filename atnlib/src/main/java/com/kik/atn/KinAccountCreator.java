@@ -10,6 +10,9 @@ import kin.core.exception.CreateAccountException;
 
 class KinAccountCreator {
 
+    private static final String ASSET_CODE_ATN = "ATN";
+    private static final String ASSET_ISSUER = "GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KBI5IHREFAJKV4MQXLELT7EX6V";
+    private static final String HORIZON_ENDPOINT = "https://horizon-testnet.stellar.org";
     private final Context context;
     private final KinClient kinClient;
     private final EventLogger eventLogger;
@@ -38,7 +41,17 @@ class KinAccountCreator {
 
     private KinClient createKinClient() {
         return new KinClient(context,
-                new ServiceProvider("https://horizon-testnet.stellar.org",
-                        ServiceProvider.NETWORK_ID_TEST));
+                new ServiceProvider(HORIZON_ENDPOINT,
+                        ServiceProvider.NETWORK_ID_TEST) {
+                    @Override
+                    protected String getAssetCode() {
+                        return ASSET_CODE_ATN;
+                    }
+
+                    @Override
+                    protected String getIssuerAccountId() {
+                        return ASSET_ISSUER;
+                    }
+                });
     }
 }
