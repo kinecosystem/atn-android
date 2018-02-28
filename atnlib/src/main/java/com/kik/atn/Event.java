@@ -44,6 +44,22 @@ class Event {
         return payload.getPayload();
     }
 
+    String getName() {
+        return name;
+    }
+
+    String getPublicAddress() {
+        return publicAddress;
+    }
+
+    String getType() {
+        return type;
+    }
+
+    String getTimestamp() {
+        return timestamp;
+    }
+
     private class Payload {
         private final Map<String, Object> payload = new HashMap<>();
 

@@ -51,7 +51,7 @@ public class ATNAccountOnBoardingTest {
         doThrow(expectedException).when(mockAtnServer).fundWithXLM(PUBLIC_ADDRESS);
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
-        verify(mockEventLogger).sendEvent("onboard");
+        verify(mockEventLogger).sendEvent("onboard_started");
         verify(mockEventLogger).sendErrorEvent("fund_xlm_failed", expectedException);
     }
 
@@ -61,7 +61,7 @@ public class ATNAccountOnBoardingTest {
         doThrow(expectedException).when(mockKinAccount).activateSync("");
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
-        verify(mockEventLogger).sendEvent("onboard");
+        verify(mockEventLogger).sendEvent("onboard_started");
         verify(mockEventLogger).sendErrorEvent("activate_failed", expectedException);
     }
 
@@ -71,7 +71,7 @@ public class ATNAccountOnBoardingTest {
         doThrow(expectedException).when(mockAtnServer).fundWithATN(PUBLIC_ADDRESS);
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
-        verify(mockEventLogger).sendEvent("onboard");
+        verify(mockEventLogger).sendEvent("onboard_started");
         verify(mockEventLogger).sendErrorEvent("fund_xlm_failed", expectedException);
     }
 
@@ -87,7 +87,7 @@ public class ATNAccountOnBoardingTest {
 
         assertTrue(onBoarding.onBoard(mockKinAccount));
 
-        verify(mockEventLogger).sendEvent("onboard");
+        verify(mockEventLogger).sendEvent("onboard_started");
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mockEventLogger).sendDurationEvent(eq("account_created"), argumentCaptor.capture());
 

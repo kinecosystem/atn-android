@@ -17,7 +17,7 @@ class ATNAccountOnBoarding {
     }
 
     boolean onBoard(KinAccount account) {
-        eventLogger.sendEvent("onboard");
+        eventLogger.sendEvent("onboard_started");
         EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
         if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
             durationLogger.report("account_created");

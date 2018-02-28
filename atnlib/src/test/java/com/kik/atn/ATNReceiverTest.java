@@ -28,7 +28,7 @@ public class ATNReceiverTest {
     public void receiveATN() throws Exception {
         receiver.receiveATN();
 
-        verify(mockEventLogger).sendEvent("receive_atn");
+        verify(mockEventLogger).sendEvent("receive_atn_started");
         verify(mockEventLogger).sendEvent("receive_atn_succeed");
     }
 
@@ -40,7 +40,7 @@ public class ATNReceiverTest {
 
         receiver.receiveATN();
 
-        verify(mockEventLogger).sendEvent("receive_atn");
+        verify(mockEventLogger).sendEvent("receive_atn_started");
         verify(mockEventLogger).sendEvent("receive_atn_failed");
     }
 

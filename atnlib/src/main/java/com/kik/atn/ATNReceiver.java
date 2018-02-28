@@ -16,7 +16,7 @@ class ATNReceiver {
     }
 
     void receiveATN() {
-        eventLogger.sendEvent("receive_atn");
+        eventLogger.sendEvent("receive_atn_started");
         try {
             atnServer.receiveATN(publicKey);
             eventLogger.sendEvent("receive_atn_succeed");
