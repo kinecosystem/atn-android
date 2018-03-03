@@ -1,7 +1,6 @@
 package com.kik.atn;
 
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -14,14 +13,15 @@ class ATNThreadHandler extends HandlerThread {
     private volatile boolean isInitialized = false;
     private Handler handler;
 
-    ATNThreadHandler(Context context) {
+    ATNThreadHandler(ModulesProvider modulesProvider) {
         super("ATNThreadHandler");
-        ATNServer atnServer = new ATNServer();
-        this.eventLogger = new EventLogger(atnServer, new AndroidLogger());
-        sessionCreator = new ATNSessionCreator(eventLogger, atnServer,
-                new KinAccountCreator(context, eventLogger),
-                new ConfigurationProvider(atnServer, eventLogger),
-                new ATNAccountOnBoarding(eventLogger, atnServer));
+        this.eventLogger = new EventLogger(modulesProvider.atnServer(), modulesProvider.androidLogger());
+        sessionCreator = new ATNSessionCreator(modulesProvider.eventLogger(),
+                modulesProvider.atnServer(),
+                modulesProvider.kinAccountCreator(),
+                modulesProvider.configurationProvider(),
+                modulesProvider.accountOnboarding());
+
         setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {

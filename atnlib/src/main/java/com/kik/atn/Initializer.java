@@ -1,21 +1,23 @@
 package com.kik.atn;
 
 
-import android.content.Context;
 import android.os.Handler;
 
 class Initializer {
 
     private ATNThreadHandler atnThreadHandler;
 
-    boolean isInitialized(Context context) {
-        createThreadHandlerIfNeeded(context);
+    Initializer() {
+    }
+
+    boolean isInitialized(ModulesProvider modulesProvider) {
+        createThreadHandlerIfNeeded(modulesProvider);
         return atnThreadHandler.isInitialized();
     }
 
-    private synchronized void createThreadHandlerIfNeeded(Context context) {
+    private synchronized void createThreadHandlerIfNeeded(ModulesProvider modulesProvider) {
         if (atnThreadHandler == null) {
-            atnThreadHandler = new ATNThreadHandler(context);
+            atnThreadHandler = new ATNThreadHandler(modulesProvider);
             atnThreadHandler.start();
         }
     }
