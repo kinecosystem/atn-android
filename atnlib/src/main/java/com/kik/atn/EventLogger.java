@@ -8,11 +8,13 @@ class EventLogger {
     private static final String TAG = EventLogger.class.getSimpleName();
     private final ATNServer server;
     private final AndroidLogger androidLogger;
+    private final boolean localOnly;
     private String publicAddress;
 
-    EventLogger(ATNServer server, AndroidLogger androidLogger) {
+    EventLogger(ATNServer server, AndroidLogger androidLogger, boolean localOnly) {
         this.server = server;
         this.androidLogger = androidLogger;
+        this.localOnly = localOnly;
     }
 
     void sendEvent(String name) {
@@ -33,7 +35,9 @@ class EventLogger {
     private void sendEvent(Event event) {
         try {
             androidLogger.log(event);
-            server.sendEvent(event);
+            if (!localOnly) {
+                server.sendEvent(event);
+            }
         } catch (IOException e) {
             androidLogger.log(TAG, "can't send event");
         }

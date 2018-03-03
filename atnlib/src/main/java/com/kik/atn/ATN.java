@@ -25,7 +25,7 @@ public class ATN {
         sendMessage(context, Dispatcher.MSG_SENT);
     }
 
-    void onMessageRecieve(Context context) {
+    void onMessageReceived(Context context) {
         sendMessage(context, Dispatcher.MSG_RECEIVE);
     }
 
@@ -35,7 +35,7 @@ public class ATN {
         }
     }
 
-    private ModulesProvider getModulesProvider(Context context) {
+    private synchronized ModulesProvider getModulesProvider(Context context) {
         if (modulesProvider == null) {
             modulesProvider = new ModulesProviderImpl(context);
         }

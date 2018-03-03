@@ -22,23 +22,24 @@ import okhttp3.ResponseBody;
 class ATNServer {
 
     private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final String URL_BASE = "http://188.166.34.7:8000/";
-    private static final String URL_CREATE_ACCOUNT = URL_BASE + "accounts/%s";
-    private static final String URL_FUND = URL_BASE + "accounts/%s/fundings";
-    private static final String URL_CLAIM_ATN = URL_BASE + "accounts/%s/claims";
-    private static final String URL_SEND_EVENT = URL_BASE + "events";
-    private static final String URL_GET_CONFIGURATION = URL_BASE + "config/%s";
+
+    private static final String URL_CREATE_ACCOUNT = "accounts/%s";
+    private static final String URL_FUND = "accounts/%s/fundings";
+    private static final String URL_CLAIM_ATN = "accounts/%s/claims";
+    private static final String URL_SEND_EVENT = "events";
+    private static final String URL_GET_CONFIGURATION = "config/%s";
     private final OkHttpClient okHttpClient;
     private final Gson gson;
+    private final ATNServerURLProvider urlProvider;
 
-    ATNServer() {
+    ATNServer(ATNServerURLProvider urlProvider) {
+        this.urlProvider = urlProvider;
         okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(20, TimeUnit.SECONDS)
                 .readTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(20, TimeUnit.SECONDS)
                 .build();
         gson = new GsonBuilder().create();
-
     }
 
     void fundWithXLM(String publicAddress) throws IOException {
@@ -70,9 +71,9 @@ class ATNServer {
         return RequestBody.create(MEDIA_TYPE_JSON, string);
     }
 
-    private void sendPostRequest(String contents, String url) throws IOException {
+    private void sendPostRequest(String contents, String restPath) throws IOException {
         Request request = new Request.Builder()
-                .url(url)
+                .url(urlProvider.getUrl() + restPath)
                 .post(createRequestBody(contents))
                 .build();
         Response response = okHttpClient.newCall(request)
@@ -87,7 +88,7 @@ class ATNServer {
     @Nullable
     Config getConfiguration(String publicAddress) throws IOException {
         Request request = new Request.Builder()
-                .url(String.format(URL_GET_CONFIGURATION, publicAddress))
+                .url(urlProvider.getUrl() + String.format(URL_GET_CONFIGURATION, publicAddress))
                 .get()
                 .build();
         Response response = okHttpClient.newCall(request)

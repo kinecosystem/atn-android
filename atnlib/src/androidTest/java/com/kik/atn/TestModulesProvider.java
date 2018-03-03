@@ -1,0 +1,39 @@
+package com.kik.atn;
+
+
+import android.content.Context;
+
+import kin.core.KinAccount;
+
+class TestModulesProvider extends ModulesProvider {
+
+    private final String serverUrl;
+    private final KinAccount account;
+
+    TestModulesProvider(Context context, String serverUrl, KinAccount account) {
+        super(context);
+        this.serverUrl = serverUrl;
+        this.account = account;
+    }
+
+    @Override
+    protected void inject(Context context) {
+        this.androidLogger = new AndroidLogger();
+        this.atnServer = new ATNServer(new ATNServerURLProvider() {
+            @Override
+            String getUrl() {
+                return serverUrl;
+            }
+        });
+        this.eventLogger = new EventLogger(atnServer, androidLogger, true);
+        this.configurationProvider = new ConfigurationProvider(atnServer, eventLogger);
+        this.onboarding = new ATNAccountOnBoarding(eventLogger, atnServer);
+        this.kinAccountCreator = new KinAccountCreator() {
+
+            @Override
+            public KinAccount getAccount() {
+                return account;
+            }
+        };
+    }
+}
