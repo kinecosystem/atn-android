@@ -24,12 +24,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ATNSenderTest {
 
     private static final String ATN_ADDRESS = "GDYF6ZDSSLM32OKGOL6ZKA4JYSBFSHLSARUUPE4YDYNOHJ5WXSLMBDUV";
+
     private static final TransactionId dummyTransactionId = new TransactionId() {
         @Override
         public String id() {
@@ -40,6 +42,8 @@ public class ATNSenderTest {
     private KinAccount mockKinAccount;
     @Mock
     private EventLogger mockEventLogger;
+    @Mock
+    private ConfigurationProvider mockConfigProvider;
     private ATNSender sender;
 
 
@@ -47,8 +51,11 @@ public class ATNSenderTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        sender = new ATNSender(mockKinAccount, mockEventLogger, ATN_ADDRESS);
+        sender = new ATNSender(mockKinAccount, mockEventLogger, mockConfigProvider);
         when(mockEventLogger.startDurationLogging()).thenCallRealMethod();
+        //by default mock enabled configuration
+        when(mockConfigProvider.getConfig(anyString())).thenReturn(new Config(true, ATN_ADDRESS));
+        when(mockKinAccount.getPublicAddress()).thenReturn("GDYF6ZDSSLM32OKGOL6ZKA4JYSBFSHLSARUUPE4YDYNOHJ5WXSLMBDUV");
     }
 
     @Test
@@ -65,7 +72,6 @@ public class ATNSenderTest {
 
     @Test
     public void sendAFN_SuccessfulTransaction_ReportDuration() throws Exception {
-
         when(mockKinAccount.sendTransactionSync(anyString(), anyString(), (BigDecimal) any()))
                 .thenAnswer(new Answer<TransactionId>() {
                     @Override
@@ -107,5 +113,15 @@ public class ATNSenderTest {
 
         verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
         verify(mockEventLogger).sendEvent("underfunded");
+    }
+
+    @Test
+    public void sendATN_Disabled_NoTransactionJustLog() throws Exception {
+        when(mockConfigProvider.getConfig(anyString())).thenReturn(new Config(false, ATN_ADDRESS));
+
+        sender.sendATN();
+
+        verify(mockKinAccount, only()).getPublicAddress();
+        verify(mockEventLogger, only()).log(anyString());
     }
 }

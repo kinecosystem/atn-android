@@ -11,6 +11,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 public class ATNSessionCreatorTest {
@@ -34,6 +35,8 @@ public class ATNSessionCreatorTest {
         MockitoAnnotations.initMocks(this);
         sessionCreator = new ATNSessionCreator(mockEventLogger, mockAtnServer, mockKinAccountCreator,
                 mockConfigurationProvider, mockOnBoarding);
+
+        when(mockKinAccount.getPublicAddress()).thenReturn("GDYF6ZDSSLM32OKGOL6ZKA4JYSBFSHLSARUUPE4YDYNOHJ5WXSLMBDUV");
     }
 
     @Test
@@ -46,7 +49,7 @@ public class ATNSessionCreatorTest {
     @Test
     public void create_ConfigurationProviderInitFailure_NotCreated() throws Exception {
         when(mockKinAccountCreator.getAccount()).thenReturn(mockKinAccount);
-        when(mockConfigurationProvider.enabled()).thenReturn(false);
+        when(mockConfigurationProvider.getConfig(anyString())).thenReturn(new Config(false, ""));
 
         assertFalse(sessionCreator.create());
     }
@@ -54,7 +57,7 @@ public class ATNSessionCreatorTest {
     @Test
     public void create_OnBoardingFailure_NotCreated() throws Exception {
         when(mockKinAccountCreator.getAccount()).thenReturn(mockKinAccount);
-        when(mockConfigurationProvider.enabled()).thenReturn(true);
+        when(mockConfigurationProvider.getConfig(anyString())).thenReturn(new Config(true, ""));
         when(mockOnBoarding.onBoard((KinAccount) any())).thenReturn(false);
 
         assertFalse(sessionCreator.create());
@@ -63,7 +66,7 @@ public class ATNSessionCreatorTest {
     @Test
     public void create_Success_Created() throws Exception {
         when(mockKinAccountCreator.getAccount()).thenReturn(mockKinAccount);
-        when(mockConfigurationProvider.enabled()).thenReturn(true);
+        when(mockConfigurationProvider.getConfig(anyString())).thenReturn(new Config(true, ""));
         when(mockOnBoarding.onBoard((KinAccount) any())).thenReturn(true);
 
         assertTrue(sessionCreator.create());

@@ -33,7 +33,7 @@ class TestModulesProvider extends ModulesProvider {
             });
         }
         this.eventLogger = new EventLogger(atnServer, androidLogger, true);
-        this.configurationProvider = new ConfigurationProvider(atnServer, eventLogger);
+        this.configurationProvider = new ConfigurationProvider(atnServer, eventLogger, 10000);
         this.onboarding = new ATNAccountOnBoarding(eventLogger, atnServer);
         this.kinAccountCreator = new KinAccountCreator() {
 

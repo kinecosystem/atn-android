@@ -51,6 +51,10 @@ class EventLogger {
         sendEvent(event);
     }
 
+    public void log(String msg) {
+        androidLogger.log(TAG, msg);
+    }
+
     class DurationLogger {
         private static final int NANOS_IN_MILLI = 1000000;
         private long start;

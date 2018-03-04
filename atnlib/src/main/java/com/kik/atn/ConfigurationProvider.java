@@ -7,27 +7,31 @@ class ConfigurationProvider {
 
     private final ATNServer server;
     private final EventLogger eventLogger;
-    private Config config;
+    private final long minUpdateIntervalMillis;
+    private Config latestConfig = null;
+    private long latestUpdate = 0;
 
-    ConfigurationProvider(ATNServer server, EventLogger eventLogger) {
+    ConfigurationProvider(ATNServer server, EventLogger eventLogger, long minUpdateIntervalMillis) {
         this.server = server;
         this.eventLogger = eventLogger;
+        this.minUpdateIntervalMillis = minUpdateIntervalMillis;
     }
 
-    boolean enabled() {
-        return config.isEnabled();
+    Config getConfig(String publicAddress) {
+        long current = System.currentTimeMillis();
+        if (current - latestUpdate > minUpdateIntervalMillis) {
+            latestUpdate = current;
+            latestConfig = fetchConfig(publicAddress);
+        }
+        return latestConfig;
     }
 
-    String ATNAddress() {
-        return config.getAtnAddress();
-    }
-
-    void init(String publicAddress) {
+    private Config fetchConfig(String publicAddress) {
         try {
-            config = server.getConfiguration(publicAddress);
+            return server.getConfiguration(publicAddress);
         } catch (IOException e) {
-            config = new Config(false, null);
             eventLogger.sendErrorEvent("get_config_failed", e);
+            return new Config(false, null);
         }
     }
 

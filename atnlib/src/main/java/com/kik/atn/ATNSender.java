@@ -10,27 +10,33 @@ import kin.core.exception.TransactionFailedException;
 class ATNSender {
 
     private final KinAccount account;
-    private final String atnAddress;
     private final EventLogger eventLogger;
+    private final ConfigurationProvider configProvider;
 
-    ATNSender(KinAccount account, EventLogger eventLogger, String atnAddress) {
+    ATNSender(KinAccount account, EventLogger eventLogger, ConfigurationProvider configProvider) {
         this.account = account;
-        this.atnAddress = atnAddress;
         this.eventLogger = eventLogger;
+        this.configProvider = configProvider;
     }
 
     void sendATN() {
-        eventLogger.sendEvent("send_atn_started");
-        try {
-            EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
-            account.sendTransactionSync(atnAddress, "", new BigDecimal(1.0));
-            durationLogger.report("send_atn_succeed");
-        } catch (Exception ex) {
-            if (ex instanceof TransactionFailedException) {
-                reportUnderfundedError(ex);
-            } else {
-                eventLogger.sendErrorEvent("send_atn_failed", ex);
+        Config config = configProvider.getConfig(account.getPublicAddress());
+
+        if (config.isEnabled()) {
+            eventLogger.sendEvent("send_atn_started");
+            try {
+                EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
+                account.sendTransactionSync(config.getAtnAddress(), "", new BigDecimal(1.0));
+                durationLogger.report("send_atn_succeed");
+            } catch (Exception ex) {
+                if (ex instanceof TransactionFailedException) {
+                    reportUnderfundedError(ex);
+                } else {
+                    eventLogger.sendErrorEvent("send_atn_failed", ex);
+                }
             }
+        } else {
+            eventLogger.log("sendATN - disabled by configuration");
         }
     }
 

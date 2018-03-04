@@ -27,10 +27,9 @@ class ATNSessionCreator {
         if (account != null) {
             String publicAddress = account.getPublicAddress();
             eventLogger.setPublicAddress(publicAddress);
-            configurationProvider.init(publicAddress);
-            if (configurationProvider.enabled() && accountOnBoarding.onBoard(account)) {
-                atnSender = new ATNSender(account, eventLogger, configurationProvider.ATNAddress());
-                afnReceiver = new ATNReceiver(atnServer, eventLogger, publicAddress);
+            if (configurationProvider.getConfig(publicAddress).isEnabled() && accountOnBoarding.onBoard(account)) {
+                atnSender = new ATNSender(account, eventLogger, configurationProvider);
+                afnReceiver = new ATNReceiver(atnServer, eventLogger, configurationProvider, publicAddress);
                 return true;
             }
         }
