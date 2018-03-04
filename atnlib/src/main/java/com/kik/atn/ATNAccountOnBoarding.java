@@ -2,7 +2,9 @@ package com.kik.atn;
 
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
+import kin.core.Balance;
 import kin.core.KinAccount;
 import kin.core.exception.OperationFailedException;
 
@@ -19,9 +21,27 @@ class ATNAccountOnBoarding {
     boolean onBoard(KinAccount account) {
         eventLogger.sendEvent("onboard_started");
         EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
+
+        if (isOnBoarded(account)) {
+            eventLogger.sendEvent("onboard_already_onboarded");
+            return true;
+        }
+
         if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
             durationLogger.report("account_created");
             return true;
+        }
+        return false;
+    }
+
+    private boolean isOnBoarded(KinAccount account) {
+        try {
+            Balance balance = account.getBalanceSync();
+            if (balance.value().compareTo(new BigDecimal("0.0")) > 0) {
+                return true;
+            }
+        } catch (OperationFailedException e) {
+            eventLogger.sendErrorEvent("is_on_boarded", e);
         }
         return false;
     }

@@ -9,8 +9,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
+import kin.core.Balance;
 import kin.core.KinAccount;
+import kin.core.exception.AccountNotFoundException;
 import kin.core.exception.OperationFailedException;
 
 import static java.lang.Thread.sleep;
@@ -49,6 +52,7 @@ public class ATNAccountOnBoardingTest {
     public void onBoard_FundWIthXLMFailed_OnBoardingFailure() throws Exception {
         IOException expectedException = new IOException("some error");
         doThrow(expectedException).when(mockAtnServer).fundWithXLM(PUBLIC_ADDRESS);
+        doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
@@ -59,6 +63,7 @@ public class ATNAccountOnBoardingTest {
     public void onBoard_ActivateAccountFailed_OnBoardingFailure() throws Exception {
         OperationFailedException expectedException = new OperationFailedException("some error");
         doThrow(expectedException).when(mockKinAccount).activateSync("");
+        doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
@@ -69,6 +74,7 @@ public class ATNAccountOnBoardingTest {
     public void onBoard_FundWIthATNFailed_OnBoardingFailure() throws Exception {
         IOException expectedException = new IOException("some error");
         doThrow(expectedException).when(mockAtnServer).fundWithATN(PUBLIC_ADDRESS);
+        doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
@@ -84,6 +90,7 @@ public class ATNAccountOnBoardingTest {
                 return null;
             }
         }).when(mockAtnServer).fundWithXLM(PUBLIC_ADDRESS);
+        doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
 
         assertTrue(onBoarding.onBoard(mockKinAccount));
 
@@ -93,6 +100,26 @@ public class ATNAccountOnBoardingTest {
 
         assertThat(argumentCaptor.getValue(), greaterThan(1000L));
         assertThat(argumentCaptor.getValue(), lessThan(1200L));
+    }
+
+    @Test
+    public void onBoard_AlreadyOnboarded() throws Exception {
+        when(mockKinAccount.getBalanceSync()).thenReturn(new Balance() {
+            @Override
+            public BigDecimal value() {
+                return new BigDecimal(10);
+            }
+
+            @Override
+            public String value(int precision) {
+                return "10";
+            }
+        });
+
+        assertTrue(onBoarding.onBoard(mockKinAccount));
+
+        verify(mockEventLogger).sendEvent("onboard_started");
+        verify(mockEventLogger).sendEvent(eq("onboard_already_onboarded"));
     }
 
 }

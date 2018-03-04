@@ -31,7 +31,7 @@ public class EventLoggerTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        eventLogger = new EventLogger(mockAtnServer, mockAndroidLogger);
+        eventLogger = new EventLogger(mockAtnServer, mockAndroidLogger, false);
         expectedPublicAddress = "GDYF6ZDSSLM32OKGOL6ZKA4JYSBFSHLSARUUPE4YDYNOHJ5WXSLMBDUV";
 
         eventLogger.setPublicAddress(expectedPublicAddress);
@@ -60,7 +60,7 @@ public class EventLoggerTest {
     public void startDurationLogging() throws Exception {
         String expectedEventName = "event_name";
         EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
-        sleep(500);
+        sleep(510);
         durationLogger.report(expectedEventName);
 
         Event capturedEvent = captureEvent();

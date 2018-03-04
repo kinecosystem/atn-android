@@ -8,6 +8,7 @@ import android.os.Message;
 
 class ATNThreadHandler extends HandlerThread {
 
+    private static final int MSG_INIT = 42;
     private final EventLogger eventLogger;
     private final ATNSessionCreator sessionCreator;
     private volatile boolean isInitialized = false;
@@ -44,11 +45,18 @@ class ATNThreadHandler extends HandlerThread {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
+                case MSG_INIT:
+                    isInitialized = sessionCreator.create();
+                    break;
                 case Dispatcher.MSG_RECEIVE:
-                    sessionCreator.getATNReceiver().receiveATN();
+                    if (isInitialized) {
+                        sessionCreator.getATNReceiver().receiveATN();
+                    }
                     break;
                 case Dispatcher.MSG_SENT:
-                    sessionCreator.getATNSender().sendATN();
+                    if (isInitialized) {
+                        sessionCreator.getATNSender().sendATN();
+                    }
                     break;
             }
         }
@@ -56,11 +64,11 @@ class ATNThreadHandler extends HandlerThread {
     }
 
     @Override
-    public void run() {
-        if (sessionCreator.create()) {
-            handler = new ATNHandler(getLooper());
-            isInitialized = true;
-        }
+    public synchronized void start() {
+        super.start();
+
+        handler = new ATNHandler(getLooper());
+        handler.sendEmptyMessage(MSG_INIT);
     }
 
     boolean isInitialized() {
