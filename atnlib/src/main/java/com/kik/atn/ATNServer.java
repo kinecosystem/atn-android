@@ -27,7 +27,7 @@ class ATNServer {
     private static final String URL_FUND = "accounts/%s/fundings";
     private static final String URL_CLAIM_ATN = "accounts/%s/claims";
     private static final String URL_SEND_EVENT = "events";
-    private static final String URL_GET_CONFIGURATION = "config/%s";
+    private static final String URL_GET_CONFIGURATION = "accounts/%s/config";
     private final OkHttpClient okHttpClient;
     private final Gson gson;
     private final ATNServerURLProvider urlProvider;

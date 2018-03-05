@@ -10,8 +10,8 @@ import kin.core.exception.CreateAccountException;
 
 class KinAccountCreatorImpl implements KinAccountCreator {
 
-    private static final String ASSET_CODE_ATN = "ATN";
-    private static final String ASSET_ISSUER = "GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KBI5IHREFAJKV4MQXLELT7EX6V";
+    private static final String ASSET_CODE_ATN = "KIN";
+    private static final String ASSET_ISSUER = "GCWPJ7X4UVFNSGWYALJC5ZQ4QPPQY3NGT4GXETSKGO44M7EINLB74LXQ";
     private static final String HORIZON_ENDPOINT = "https://horizon-testnet.stellar.org";
     private final Context context;
     private final KinClient kinClient;

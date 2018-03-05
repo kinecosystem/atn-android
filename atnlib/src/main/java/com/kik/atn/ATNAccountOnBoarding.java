@@ -28,7 +28,7 @@ class ATNAccountOnBoarding {
         }
 
         if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
-            durationLogger.report("account_created");
+            durationLogger.report("onboard_succeed");
             return true;
         }
         return false;
@@ -41,7 +41,7 @@ class ATNAccountOnBoarding {
                 return true;
             }
         } catch (OperationFailedException e) {
-            eventLogger.sendErrorEvent("is_on_boarded", e);
+            eventLogger.sendErrorEvent("onboard_is_on_boarded_failed", e);
         }
         return false;
     }
@@ -52,7 +52,7 @@ class ATNAccountOnBoarding {
             atnServer.fundWithXLM(account.getPublicAddress());
             return true;
         } catch (IOException e) {
-            eventLogger.sendErrorEvent("fund_xlm_failed", e);
+            eventLogger.sendErrorEvent("onboard_fund_xlm_failed", e);
         }
         return false;
     }
@@ -62,7 +62,7 @@ class ATNAccountOnBoarding {
             account.activateSync("");
             return true;
         } catch (OperationFailedException e) {
-            eventLogger.sendErrorEvent("activate_failed", e);
+            eventLogger.sendErrorEvent("onboard_activate_failed", e);
         }
         return false;
     }
@@ -72,7 +72,7 @@ class ATNAccountOnBoarding {
             atnServer.fundWithATN(account.getPublicAddress());
             return true;
         } catch (IOException e) {
-            eventLogger.sendErrorEvent("fund_xlm_failed", e);
+            eventLogger.sendErrorEvent("onboard_fund_atn_failed", e);
         }
         return false;
     }

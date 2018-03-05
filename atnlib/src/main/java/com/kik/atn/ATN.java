@@ -21,11 +21,11 @@ public class ATN {
         this.modulesProvider = modulesProvider;
     }
 
-    void onMessageSent(Context context) {
+    public void onMessageSent(Context context) {
         sendMessage(context, Dispatcher.MSG_SENT);
     }
 
-    void onMessageReceived(Context context) {
+    public void onMessageReceived(Context context) {
         sendMessage(context, Dispatcher.MSG_RECEIVE);
     }
 
