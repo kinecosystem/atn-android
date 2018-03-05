@@ -56,7 +56,7 @@ public class ATNAccountOnBoardingTest {
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
-        verify(mockEventLogger).sendErrorEvent("onboard_fund_xlm_failed", expectedException);
+        verify(mockEventLogger).sendErrorEvent("account_creation_failed", expectedException);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class ATNAccountOnBoardingTest {
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
-        verify(mockEventLogger).sendErrorEvent("onboard_activate_failed", expectedException);
+        verify(mockEventLogger).sendErrorEvent("trustline_setup_failed", expectedException);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class ATNAccountOnBoardingTest {
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
-        verify(mockEventLogger).sendErrorEvent("onboard_fund_atn_failed", expectedException);
+        verify(mockEventLogger).sendErrorEvent("account_funding_failed", expectedException);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class ATNAccountOnBoardingTest {
 
         verify(mockEventLogger).sendEvent("onboard_started");
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(mockEventLogger).sendDurationEvent(eq("onboard_succeed"), argumentCaptor.capture());
+        verify(mockEventLogger).sendDurationEvent(eq("onboard_succeeded"), argumentCaptor.capture());
 
         assertThat(argumentCaptor.getValue(), greaterThan(1000L));
         assertThat(argumentCaptor.getValue(), lessThan(1200L));

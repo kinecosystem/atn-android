@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 
 import kin.core.Balance;
 import kin.core.KinAccount;
+import kin.core.exception.AccountNotActivatedException;
+import kin.core.exception.AccountNotFoundException;
 import kin.core.exception.OperationFailedException;
 
 class ATNAccountOnBoarding {
@@ -28,9 +30,10 @@ class ATNAccountOnBoarding {
         }
 
         if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
-            durationLogger.report("onboard_succeed");
+            durationLogger.report("onboard_succeeded");
             return true;
         }
+        durationLogger.report("onboard_failed");
         return false;
     }
 
@@ -40,8 +43,10 @@ class ATNAccountOnBoarding {
             if (balance.value().compareTo(new BigDecimal("0.0")) > 0) {
                 return true;
             }
-        } catch (OperationFailedException e) {
-            eventLogger.sendErrorEvent("onboard_is_on_boarded_failed", e);
+        } catch (AccountNotFoundException | AccountNotActivatedException e) {
+            return false;
+        } catch (OperationFailedException ofe) {
+            eventLogger.sendErrorEvent("onboard_is_on_boarded_failed", ofe);
         }
         return false;
     }
@@ -50,9 +55,10 @@ class ATNAccountOnBoarding {
     private boolean fundWithXLM(KinAccount account) {
         try {
             atnServer.fundWithXLM(account.getPublicAddress());
+            eventLogger.sendEvent("account_creation_succeeded");
             return true;
         } catch (IOException e) {
-            eventLogger.sendErrorEvent("onboard_fund_xlm_failed", e);
+            eventLogger.sendErrorEvent("account_creation_failed", e);
         }
         return false;
     }
@@ -60,9 +66,10 @@ class ATNAccountOnBoarding {
     private boolean activateAccount(KinAccount account) {
         try {
             account.activateSync("");
+            eventLogger.sendEvent("trustline_setup_succeeded");
             return true;
         } catch (OperationFailedException e) {
-            eventLogger.sendErrorEvent("onboard_activate_failed", e);
+            eventLogger.sendErrorEvent("trustline_setup_failed", e);
         }
         return false;
     }
@@ -70,9 +77,10 @@ class ATNAccountOnBoarding {
     private boolean fundWithATN(KinAccount account) {
         try {
             atnServer.fundWithATN(account.getPublicAddress());
+            eventLogger.sendEvent("account_funding_succeeded");
             return true;
         } catch (IOException e) {
-            eventLogger.sendErrorEvent("onboard_fund_atn_failed", e);
+            eventLogger.sendErrorEvent("account_funding_failed", e);
         }
         return false;
     }

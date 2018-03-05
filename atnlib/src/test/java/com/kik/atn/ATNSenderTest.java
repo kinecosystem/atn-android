@@ -67,7 +67,7 @@ public class ATNSenderTest {
 
         verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
         verify(mockEventLogger).sendEvent("send_atn_started");
-        verify(mockEventLogger).sendDurationEvent(eq("send_atn_succeed"), anyLong());
+        verify(mockEventLogger).sendDurationEvent(eq("send_atn_succeeded"), anyLong());
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ATNSenderTest {
         sender.sendATN();
 
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(mockEventLogger).sendDurationEvent(eq("send_atn_succeed"), argumentCaptor.capture());
+        verify(mockEventLogger).sendDurationEvent(eq("send_atn_succeeded"), argumentCaptor.capture());
         assertThat(argumentCaptor.getValue(), greaterThan(1000L));
         assertThat(argumentCaptor.getValue(), lessThan(1200L));
     }
@@ -112,7 +112,7 @@ public class ATNSenderTest {
         sender.sendATN();
 
         verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
-        verify(mockEventLogger).sendEvent("underfunded");
+        verify(mockEventLogger).sendErrorEvent("send_atn_failed", expectedException);
     }
 
     @Test

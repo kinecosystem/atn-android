@@ -21,12 +21,12 @@ class ATNReceiver {
         Config config = configProvider.getConfig(publicKey);
 
         if (config.isEnabled()) {
-            eventLogger.sendEvent("receive_atn_started");
+            eventLogger.sendEvent("claim_atn_started");
             try {
                 atnServer.receiveATN(publicKey);
-                eventLogger.sendEvent("receive_atn_succeed");
+                eventLogger.sendEvent("claim_atn_succeeded");
             } catch (IOException e) {
-                eventLogger.sendEvent("receive_atn_failed");
+                eventLogger.sendEvent("claim_atn_failed");
             }
         } else {
             eventLogger.log("receiveATN - disabled by configuration");

@@ -1,13 +1,11 @@
 package com.kik.atn;
 
 
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.SerializedName;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -43,9 +41,7 @@ class ATNServer {
     }
 
     void fundWithXLM(String publicAddress) throws IOException {
-        FundWithXlmRequest fundWithXlmRequest = new FundWithXlmRequest();
-        String requestContent = gson.toJson(fundWithXlmRequest, FundWithXlmRequest.class);
-        sendPublicAddressRequest(publicAddress, requestContent, URL_CREATE_ACCOUNT);
+        sendPublicAddressRequest(publicAddress, "", URL_CREATE_ACCOUNT);
     }
 
     void fundWithATN(String publicAddress) throws IOException {
@@ -109,18 +105,4 @@ class ATNServer {
 
     }
 
-    @SuppressWarnings("unused")
-    private static class FundWithXlmRequest {
-        @SerializedName("sdk_level")
-        private final int sdkLevel;
-        private final String model;
-        private final String manufacturer;
-
-
-        private FundWithXlmRequest() {
-            this.sdkLevel = Build.VERSION.SDK_INT;
-            this.model = Build.MODEL;
-            this.manufacturer = Build.MANUFACTURER;
-        }
-    }
 }
