@@ -10,14 +10,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 class Event {
 
     final static String TYPE_EVENT = "event";
     final static String TYPE_ERROR = "error";
     final static String TYPE_DURATION = "operation_duration";
-    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+    private final static SimpleDateFormat dateFormat;
     private final static DeviceInfo deviceInfo = new DeviceInfo();
+
+    static {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+    }
 
     private final String name;
     private final String timestamp;
