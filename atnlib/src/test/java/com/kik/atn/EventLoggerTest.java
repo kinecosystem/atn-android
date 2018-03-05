@@ -66,7 +66,7 @@ public class EventLoggerTest {
         Event capturedEvent = captureEvent();
         assertThat(capturedEvent.getName(), equalTo(expectedEventName));
         assertThat(capturedEvent.getPublicAddress(), equalTo(expectedPublicAddress));
-        assertThat(capturedEvent.getType(), equalTo("operation_duration"));
+        assertThat(capturedEvent.getType(), equalTo("event"));
         assertThat((Long) capturedEvent.getFields().get("duration"), greaterThan(500L));
         assertThat((Long) capturedEvent.getFields().get("duration"), lessThan(550L));
     }

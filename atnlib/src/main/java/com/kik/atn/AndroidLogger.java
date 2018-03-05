@@ -27,13 +27,13 @@ class AndroidLogger {
             log.append(event.getTimestamp());
             log.append(FIELD_END);
             log.append("sdk_level = ");
-            log.append(event.getDevice().getSdkLevel());
+            log.append(event.getSdkLevel());
             log.append(FIELD_END);
             log.append("model = ");
-            log.append(event.getDevice().getModel());
+            log.append(event.getModel());
             log.append(FIELD_END);
             log.append("manufacturer = ");
-            log.append(event.getDevice().getManufacturer());
+            log.append(event.getManufacturer());
             log.append(FIELD_END);
             for (Map.Entry<String, Object> entry : event.getFields().entrySet()) {
                 log.append(entry.getKey())

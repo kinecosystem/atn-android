@@ -18,19 +18,25 @@ class Event {
     final static String TYPE_ERROR = "error";
     final static String TYPE_DURATION = "operation_duration";
     private final static SimpleDateFormat dateFormat;
-    private final static DeviceInfo deviceInfo = new DeviceInfo();
 
     static {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
+    @SerializedName("event_name")
     private final String name;
     private final String timestamp;
+    @SerializedName("event_type")
     private final String type;
     @SerializedName("public_address")
     private final String publicAddress;
-    private final DeviceInfo device;
+    @SerializedName("sdk_level")
+    private final int sdkLevel;
+    @SerializedName("device_model")
+    private final String model;
+    @SerializedName("device_manufacturer")
+    private final String manufacturer;
     private final Payload payload = new Payload();
 
 
@@ -39,7 +45,10 @@ class Event {
         this.timestamp = dateFormat.format(new Date());
         this.type = type;
         this.publicAddress = publicAddress;
-        device = deviceInfo;
+        this.sdkLevel = Build.VERSION.SDK_INT;
+        this.model = Build.MODEL;
+        this.manufacturer = Build.MANUFACTURER;
+
     }
 
     Event addField(String key, Object value) {
@@ -67,8 +76,16 @@ class Event {
         return timestamp;
     }
 
-    DeviceInfo getDevice() {
-        return device;
+    int getSdkLevel() {
+        return sdkLevel;
+    }
+
+    String getManufacturer() {
+        return manufacturer;
+    }
+
+    String getModel() {
+        return model;
     }
 
     private class Payload {
@@ -83,30 +100,5 @@ class Event {
         }
     }
 
-    @SuppressWarnings("unused")
-    static class DeviceInfo {
-        @SerializedName("sdk_level")
-        private final int sdkLevel;
-        private final String model;
-        private final String manufacturer;
 
-
-        private DeviceInfo() {
-            this.sdkLevel = Build.VERSION.SDK_INT;
-            this.model = Build.MODEL;
-            this.manufacturer = Build.MANUFACTURER;
-        }
-
-        public int getSdkLevel() {
-            return sdkLevel;
-        }
-
-        public String getManufacturer() {
-            return manufacturer;
-        }
-
-        public String getModel() {
-            return model;
-        }
-    }
 }

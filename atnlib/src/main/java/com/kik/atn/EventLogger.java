@@ -27,7 +27,7 @@ class EventLogger {
     }
 
     void sendDurationEvent(String name, long duration) {
-        Event event = new Event(name, Event.TYPE_DURATION, publicAddress)
+        Event event = new Event(name, Event.TYPE_EVENT, publicAddress)
                 .addField("duration", duration);
         sendEvent(event);
     }
