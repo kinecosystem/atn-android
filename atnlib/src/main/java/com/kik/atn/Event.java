@@ -37,8 +37,7 @@ class Event {
     private final String model;
     @SerializedName("device_manufacturer")
     private final String manufacturer;
-    private final Payload payload = new Payload();
-
+    private final Map<String, Object> payload = new HashMap<>();
 
     Event(String name, String type, String publicAddress) {
         this.name = name;
@@ -52,12 +51,12 @@ class Event {
     }
 
     Event addField(String key, Object value) {
-        payload.addField(key, value);
+        payload.put(key, value);
         return this;
     }
 
     Map<String, Object> getFields() {
-        return payload.getPayload();
+        return payload;
     }
 
     String getName() {
@@ -87,18 +86,5 @@ class Event {
     String getModel() {
         return model;
     }
-
-    private class Payload {
-        private final Map<String, Object> payload = new HashMap<>();
-
-        void addField(String key, Object value) {
-            payload.put(key, value);
-        }
-
-        Map<String, Object> getPayload() {
-            return payload;
-        }
-    }
-
 
 }
