@@ -26,12 +26,16 @@ class ConfigurationProvider {
         return latestConfig;
     }
 
+    Config getLastConfig() {
+        return latestConfig;
+    }
+
     private Config fetchConfig(String publicAddress) {
         try {
             return server.getConfiguration(publicAddress);
         } catch (IOException e) {
             eventLogger.sendErrorEvent("get_config_failed", e);
-            return new Config(false, null);
+            return new Config(false, null, 0);
         }
     }
 

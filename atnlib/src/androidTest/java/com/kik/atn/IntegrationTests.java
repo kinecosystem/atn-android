@@ -30,6 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
@@ -177,6 +178,7 @@ public class IntegrationTests {
         sleep(1000);
 
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
+        sleep(5010);
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
         InOrder inOrder = inOrder(mockKinAccount, mockATNServer);
@@ -202,12 +204,59 @@ public class IntegrationTests {
         sleep(1000);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        sleep(5010);
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
 
         InOrder inOrder = inOrder(mockKinAccount, mockATNServer);
         inOrder.verify(mockKinAccount, timeout(1000).times(1))
                 .sendTransactionSync(anyString(), anyString(), (BigDecimal) any());
         inOrder.verify(mockATNServer, timeout(1000).times(1))
+                .receiveATN(PUBLIC_ADDRESS);
+    }
+
+    @Test
+    public void rateLimit() throws Exception {
+        ATNServer mockATNServer = mock(ATNServer.class);
+        TestModulesProvider modulesProvider = new TestModulesProvider(InstrumentationRegistry.getTargetContext(), mockServerUrl, mockKinAccount,
+                mockATNServer);
+
+        atn = new ATN(modulesProvider);
+        //Mock onboarding with rate limit value
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("{\n" +
+                        "     \"enabled\" : true,\n" +
+                        "     \"target_wallet_address\": \"GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU\",\n" +
+                        "     \"transaction_lapse\": 1\n" +
+                        "}")
+                .setResponseCode(200));
+        when(mockKinAccount.getBalanceSync()).thenReturn(new Balance() {
+            @Override
+            public BigDecimal value() {
+                return new BigDecimal(10);
+            }
+
+            @Override
+            public String value(int precision) {
+                return "10.0";
+            }
+        });
+
+        mockEnabledConfiguration(); //for send transaction request
+
+        atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
+        sleep(1010);
+
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
+        atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
+
+        verify(mockKinAccount, timeout(1000).times(1))
+                .sendTransactionSync(anyString(), anyString(), (BigDecimal) any());
+        verifyZeroInteractions(mockATNServer);
+
+        sleep(1010);
+        atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
+        verify(mockATNServer, timeout(1000).times(1))
                 .receiveATN(PUBLIC_ADDRESS);
     }
 

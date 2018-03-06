@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -93,7 +92,7 @@ public class EventLoggerTest {
         eventLogger.sendEvent("event name");
 
         verify(mockAndroidLogger).log((Event) any());
-        verify(mockAndroidLogger).log(anyString(), eq("can't send event"));
+        verify(mockAndroidLogger).log(eq("EventLogger - can't send event"));
     }
 
 }

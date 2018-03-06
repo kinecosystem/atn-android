@@ -25,4 +25,8 @@ class Initializer {
     Handler getHandler() {
         return atnThreadHandler.getHandler();
     }
+
+    Dispatcher getDispatcher() {
+        return atnThreadHandler.getDispatcher();
+    }
 }

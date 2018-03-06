@@ -5,7 +5,6 @@ import java.io.IOException;
 
 class EventLogger {
 
-    private static final String TAG = EventLogger.class.getSimpleName();
     private final ATNServer server;
     private final AndroidLogger androidLogger;
     private final boolean localOnly;
@@ -39,7 +38,7 @@ class EventLogger {
                 server.sendEvent(event);
             }
         } catch (IOException e) {
-            androidLogger.log(TAG, "can't send event");
+            androidLogger.log("EventLogger - can't send event");
         }
     }
 
@@ -51,8 +50,8 @@ class EventLogger {
         sendEvent(event);
     }
 
-    public void log(String msg) {
-        androidLogger.log(TAG, msg);
+    void log(String msg) {
+        androidLogger.log(msg);
     }
 
     class DurationLogger {

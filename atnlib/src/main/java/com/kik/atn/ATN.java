@@ -7,12 +7,10 @@ import android.support.annotation.VisibleForTesting;
 public class ATN {
 
     private final Initializer initializer;
-    private final Dispatcher dispatcher;
     private ModulesProvider modulesProvider;
 
     public ATN() {
         initializer = new Initializer();
-        dispatcher = new Dispatcher();
     }
 
     @VisibleForTesting
@@ -31,7 +29,7 @@ public class ATN {
 
     private void sendMessage(Context context, int msg) {
         if (initializer.isInitialized(getModulesProvider(context))) {
-            dispatcher.dispatch(initializer.getHandler(), msg);
+            initializer.getDispatcher().dispatch(initializer.getHandler(), msg);
         }
     }
 

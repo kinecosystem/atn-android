@@ -46,9 +46,9 @@ class AndroidLogger {
         }
     }
 
-    void log(String tag, String msg) {
+    void log(String msg) {
         if (SHOULD_LOG) {
-            Log.d(tag, msg);
+            Log.d(TAG, msg);
         }
     }
 }
