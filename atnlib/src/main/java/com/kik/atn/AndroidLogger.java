@@ -51,4 +51,8 @@ class AndroidLogger {
             Log.d(TAG, msg);
         }
     }
+
+    String getPrintableStackTrace(Throwable t) {
+        return Log.getStackTraceString(t);
+    }
 }

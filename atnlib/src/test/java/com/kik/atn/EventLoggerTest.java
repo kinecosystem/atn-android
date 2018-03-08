@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class EventLoggerTest {
 
@@ -72,6 +73,7 @@ public class EventLoggerTest {
 
     @Test
     public void sendErrorEvent() throws Exception {
+        when(mockAndroidLogger.getPrintableStackTrace((Throwable) any())).thenReturn("java.lang.Exception: some error");
         String expectedEventName = "event_name";
         Exception expectedException = new Exception("some error");
         eventLogger.sendErrorEvent(expectedEventName, expectedException);

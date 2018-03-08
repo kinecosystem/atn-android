@@ -45,7 +45,7 @@ class EventLogger {
     void sendErrorEvent(String name, Throwable throwable) {
         Event event = new Event(name, Event.TYPE_ERROR, publicAddress)
                 .addField("exception_type", throwable.getClass().getSimpleName())
-                .addField("exception_msg", throwable.toString());
+                .addField("exception_msg", androidLogger.getPrintableStackTrace(throwable));
 
         sendEvent(event);
     }
