@@ -12,7 +12,7 @@ class KinAccountCreatorImpl implements KinAccountCreator {
 
     private static final String ASSET_CODE_ATN = "ATN";
     private static final String ASSET_ISSUER = "GCAUZH5OGE4HU4NZPBXX67A66D6DVR2IIZMT2BU635UN5PJXWUPUO3A7";
-    private static final String HORIZON_ENDPOINT = "https://horizon-testnet.stellar.org";
+    private static final String HORIZON_ENDPOINT = "http://horizon-testnet.kininfrastructure.com";
     private final Context context;
     private final KinClient kinClient;
     private final EventLogger eventLogger;
