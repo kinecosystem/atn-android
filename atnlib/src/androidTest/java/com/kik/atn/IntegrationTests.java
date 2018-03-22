@@ -72,8 +72,9 @@ public class IntegrationTests {
         mockEnabledConfiguration();
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        //should be dropped by rate limiter
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        sleep(2000);
+        sleep(1010);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
@@ -88,8 +89,9 @@ public class IntegrationTests {
         mockEnabledConfiguration();
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        //should be dropped by rate limiter
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        sleep(3000);
+        sleep(1010);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
@@ -119,6 +121,7 @@ public class IntegrationTests {
         mockWebServer.enqueue(new MockResponse()
                 .setBody("{\n" +
                         "     \"enabled\" : true,\n" +
+                        "     \"transaction_lapse\" : 1,\n" +
                         "     \"target_wallet_address\": \"GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU\"\n" +
                         "}")
                 .setResponseCode(200));
@@ -135,10 +138,10 @@ public class IntegrationTests {
                 .setResponseCode(200));
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        sleep(1000);
+        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        sleep(1000);
         verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
     }
 
@@ -152,9 +155,10 @@ public class IntegrationTests {
 
         mockAlreadyOnBoarded();
 
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        //should be dropped by rate limiter
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
-        atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
-        sleep(1000);
+        sleep(1010);
 
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
 
@@ -174,11 +178,12 @@ public class IntegrationTests {
         mockEnabledConfiguration(); //for send transaction request
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        //should be dropped by rate limiter
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
-        sleep(1000);
+        sleep(1010);
 
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
-        sleep(5010);
+        sleep(1010);
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
         InOrder inOrder = inOrder(mockKinAccount, mockATNServer);
@@ -199,12 +204,11 @@ public class IntegrationTests {
         mockAlreadyOnBoarded();
         mockEnabledConfiguration(); //for send transaction request
 
-        atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        sleep(1000);
+        sleep(1010);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        sleep(5010);
+        sleep(1010);
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
 
         InOrder inOrder = inOrder(mockKinAccount, mockATNServer);
@@ -243,7 +247,7 @@ public class IntegrationTests {
 
         mockEnabledConfiguration(); //for send transaction request
 
-        atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         sleep(1010);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());

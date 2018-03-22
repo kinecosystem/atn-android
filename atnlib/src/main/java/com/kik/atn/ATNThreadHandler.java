@@ -8,14 +8,13 @@ import android.os.Message;
 
 class ATNThreadHandler extends HandlerThread {
 
-    private static final int MSG_INIT = 42;
     private final EventLogger eventLogger;
     private final ATNSessionCreator sessionCreator;
     private final ConfigurationProvider configurationProvider;
-    private volatile boolean isInitialized = false;
     private volatile boolean isBusy;
     private Handler handler;
     private Dispatcher dispatcher;
+    private boolean sessionCreated = false;
 
     ATNThreadHandler(ModulesProvider modulesProvider) {
         super("ATNThreadHandler");
@@ -37,7 +36,6 @@ class ATNThreadHandler extends HandlerThread {
     }
 
     private void handleUncaughtException(Throwable throwable) {
-        isInitialized = false;
         isBusy = false;
         eventLogger.sendErrorEvent("uncaught_exception", throwable);
     }
@@ -52,19 +50,18 @@ class ATNThreadHandler extends HandlerThread {
         public void handleMessage(Message msg) {
             isBusy = true;
             switch (msg.what) {
-                case MSG_INIT:
-                    isInitialized = sessionCreator.create();
-                    updateRateLimit();
-                    break;
                 case Dispatcher.MSG_RECEIVE:
-                    if (isInitialized) {
+                    if (sessionCreated) {
                         sessionCreator.getATNReceiver().receiveATN();
                         updateRateLimit();
                     }
                     break;
                 case Dispatcher.MSG_SENT:
-                    if (isInitialized) {
+                    if (sessionCreated) {
                         sessionCreator.getATNSender().sendATN();
+                        updateRateLimit();
+                    } else {
+                        sessionCreated = sessionCreator.create();
                         updateRateLimit();
                     }
                     break;
@@ -84,11 +81,6 @@ class ATNThreadHandler extends HandlerThread {
         super.start();
 
         handler = new ATNHandler(getLooper());
-        handler.sendEmptyMessage(MSG_INIT);
-    }
-
-    boolean isInitialized() {
-        return isInitialized;
     }
 
     boolean isBusy() {

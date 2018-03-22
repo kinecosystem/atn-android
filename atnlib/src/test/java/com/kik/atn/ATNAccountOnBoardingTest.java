@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 
 import kin.core.Balance;
 import kin.core.KinAccount;
+import kin.core.exception.AccountNotActivatedException;
 import kin.core.exception.AccountNotFoundException;
 import kin.core.exception.OperationFailedException;
 
@@ -22,6 +23,7 @@ import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -56,6 +58,7 @@ public class ATNAccountOnBoardingTest {
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
+        verify(mockEventLogger).sendEvent("onboard_account_not_created");
         verify(mockEventLogger).sendErrorEvent("account_creation_failed", expectedException);
     }
 
@@ -67,7 +70,26 @@ public class ATNAccountOnBoardingTest {
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
+        verify(mockEventLogger).sendEvent("onboard_account_not_created");
         verify(mockEventLogger).sendErrorEvent("trustline_setup_failed", expectedException);
+    }
+
+    @Test
+    public void onBoard_AccountNotActivated_OnBoardingSuccess() throws Exception {
+        OperationFailedException expectedException = new OperationFailedException("some error");
+        doThrow(expectedException).when(mockKinAccount).activateSync("");
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                return null;
+            }
+        }).when(mockKinAccount).activateSync("");
+        doThrow(new AccountNotActivatedException("")).when(mockKinAccount).getBalanceSync();
+
+        assertTrue(onBoarding.onBoard(mockKinAccount));
+        verify(mockEventLogger).sendEvent("onboard_started");
+        verify(mockEventLogger).sendEvent("onboard_trustline_not_set");
+        verify(mockEventLogger).sendDurationEvent(eq("onboard_succeeded"), anyLong());
     }
 
     @Test
@@ -78,7 +100,27 @@ public class ATNAccountOnBoardingTest {
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
         verify(mockEventLogger).sendEvent("onboard_started");
+        verify(mockEventLogger).sendEvent("onboard_account_not_created");
         verify(mockEventLogger).sendErrorEvent("account_funding_failed", expectedException);
+    }
+
+    @Test
+    public void onBoard_NotFunded_OnBoardingSuccess() throws Exception {
+        IOException expectedException = new IOException("some error");
+        doThrow(expectedException).when(mockAtnServer).fundWithATN(PUBLIC_ADDRESS);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                return null;
+            }
+        }).when(mockAtnServer).fundWithATN(PUBLIC_ADDRESS);
+        doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
+
+
+        assertTrue(onBoarding.onBoard(mockKinAccount));
+        verify(mockEventLogger).sendEvent("onboard_started");
+        verify(mockEventLogger).sendEvent("onboard_account_not_created");
+        verify(mockEventLogger).sendDurationEvent(eq("onboard_succeeded"), anyLong());
     }
 
     @Test
@@ -95,6 +137,7 @@ public class ATNAccountOnBoardingTest {
         assertTrue(onBoarding.onBoard(mockKinAccount));
 
         verify(mockEventLogger).sendEvent("onboard_started");
+        verify(mockEventLogger).sendEvent("onboard_account_not_created");
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mockEventLogger).sendDurationEvent(eq("onboard_succeeded"), argumentCaptor.capture());
 

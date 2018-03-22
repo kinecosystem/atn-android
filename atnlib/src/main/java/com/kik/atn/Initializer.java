@@ -12,7 +12,7 @@ class Initializer {
 
     boolean isInitialized(ModulesProvider modulesProvider) {
         createThreadHandlerIfNeeded(modulesProvider);
-        return atnThreadHandler.isInitialized();
+        return true;
     }
 
     private synchronized void createThreadHandlerIfNeeded(ModulesProvider modulesProvider) {

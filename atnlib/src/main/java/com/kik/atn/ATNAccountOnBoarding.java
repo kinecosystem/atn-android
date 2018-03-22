@@ -14,6 +14,11 @@ class ATNAccountOnBoarding {
 
     private final EventLogger eventLogger;
     private final ATNServer atnServer;
+    private final int STATE_NOT_CREATED = 1;
+    private final int STATE_NOT_ACTIVATED = 2;
+    private final int STATE_NOT_FUNDED = 3;
+    private final int STATE_ONBOARDED = 4;
+    private final int STATE_ERROR = 5;
 
     ATNAccountOnBoarding(EventLogger eventLogger, ATNServer atnServer) {
         this.eventLogger = eventLogger;
@@ -24,31 +29,54 @@ class ATNAccountOnBoarding {
         eventLogger.sendEvent("onboard_started");
         EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
 
-        if (isOnBoarded(account)) {
-            eventLogger.sendEvent("onboard_already_onboarded");
-            return true;
-        }
-
-        if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
-            durationLogger.report("onboard_succeeded");
-            return true;
+        switch (getOnboradingState(account)) {
+            case STATE_ONBOARDED:
+                eventLogger.sendEvent("onboard_already_onboarded");
+                return true;
+            case STATE_NOT_CREATED:
+                eventLogger.sendEvent("onboard_account_not_created");
+                if (fundWithXLM(account) && activateAccount(account) && fundWithATN(account)) {
+                    durationLogger.report("onboard_succeeded");
+                    return true;
+                }
+                break;
+            case STATE_NOT_ACTIVATED:
+                eventLogger.sendEvent("onboard_trustline_not_set");
+                if (activateAccount(account) && fundWithATN(account)) {
+                    durationLogger.report("onboard_succeeded");
+                    return true;
+                }
+                break;
+            case STATE_NOT_FUNDED:
+                eventLogger.sendEvent("onboard_account_not_funded");
+                if (fundWithATN(account)) {
+                    durationLogger.report("onboard_succeeded");
+                    return true;
+                }
+                break;
+            case STATE_ERROR:
+                return false;
         }
         durationLogger.report("onboard_failed");
         return false;
     }
 
-    private boolean isOnBoarded(KinAccount account) {
+    private int getOnboradingState(KinAccount account) {
         try {
             Balance balance = account.getBalanceSync();
             if (balance.value().compareTo(new BigDecimal("0.0")) > 0) {
-                return true;
+                return STATE_ONBOARDED;
+            } else {
+                return STATE_NOT_FUNDED;
             }
-        } catch (AccountNotFoundException | AccountNotActivatedException e) {
-            return false;
+        } catch (AccountNotFoundException e) {
+            return STATE_NOT_CREATED;
+        } catch (AccountNotActivatedException e) {
+            return STATE_NOT_ACTIVATED;
         } catch (OperationFailedException ofe) {
             eventLogger.sendErrorEvent("onboard_is_on_boarded_failed", ofe);
         }
-        return false;
+        return STATE_ERROR;
     }
 
 
