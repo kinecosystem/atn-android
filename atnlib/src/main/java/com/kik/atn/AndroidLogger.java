@@ -42,13 +42,13 @@ class AndroidLogger {
                         .append(FIELD_END);
             }
 
-            Log.d(TAG, log.toString());
+            Log.w(TAG, log.toString());
         }
     }
 
     void log(String msg) {
         if (SHOULD_LOG) {
-            Log.d(TAG, msg);
+            Log.w(TAG, msg);
         }
     }
 
