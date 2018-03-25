@@ -53,7 +53,7 @@ class ATNServer {
     }
 
     void sendEvent(Event event) throws IOException {
-        String json = gson.toJson(event, event.getClass());
+        String json = gson.toJson(event, Event.class);
         sendPostRequest(json, URL_SEND_EVENT);
     }
 

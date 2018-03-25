@@ -26,6 +26,7 @@ class Event {
 
     @SerializedName("event_name")
     private final String name;
+    @SerializedName("timestamp")
     private final String timestamp;
     @SerializedName("event_type")
     private final String type;
@@ -37,6 +38,7 @@ class Event {
     private final String model;
     @SerializedName("device_manufacturer")
     private final String manufacturer;
+    @SerializedName("payload")
     private final Map<String, Object> payload = new HashMap<>();
 
     Event(String name, String type, String publicAddress) {

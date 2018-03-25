@@ -4,6 +4,7 @@ package com.kik.atn;
 import com.google.gson.annotations.SerializedName;
 
 class Config {
+    @SerializedName("enabled")
     private final boolean enabled;
     @SerializedName("target_wallet_address")
     private final String atnAddress;
