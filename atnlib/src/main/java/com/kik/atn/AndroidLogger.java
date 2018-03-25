@@ -9,7 +9,7 @@ class AndroidLogger {
 
     private static final String TAG = "atnlib";
     private static final String FIELD_END = ", ";
-    private static boolean SHOULD_LOG = BuildConfig.DEBUG || Log.isLoggable(TAG, Log.DEBUG);
+    private static boolean SHOULD_LOG = true; //BuildConfig.DEBUG || Log.isLoggable(TAG, Log.DEBUG);
 
     void log(Event event) {
         if (SHOULD_LOG) {
@@ -42,13 +42,13 @@ class AndroidLogger {
                         .append(FIELD_END);
             }
 
-            Log.w(TAG, log.toString());
+            Log.e(TAG, log.toString());
         }
     }
 
     void log(String msg) {
         if (SHOULD_LOG) {
-            Log.w(TAG, msg);
+            Log.e(TAG, msg);
         }
     }
 
