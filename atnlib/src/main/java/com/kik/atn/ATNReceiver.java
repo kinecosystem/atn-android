@@ -26,7 +26,7 @@ class ATNReceiver {
                 atnServer.receiveATN(publicKey);
                 eventLogger.sendEvent("claim_atn_succeeded");
             } catch (IOException e) {
-                eventLogger.sendEvent("claim_atn_failed");
+                eventLogger.sendErrorEvent("claim_atn_failed", e);
             }
         } else {
             eventLogger.log("receiveATN - disabled by configuration");
