@@ -2,9 +2,11 @@ package com.kik.atn;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.RobolectricTestRunner;
 
 import java.io.IOException;
 
@@ -19,6 +21,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@RunWith(RobolectricTestRunner.class)
+@org.robolectric.annotation.Config(sdk = 23, manifest = org.robolectric.annotation.Config.NONE)
 public class EventLoggerTest {
 
     @Mock
@@ -47,7 +51,7 @@ public class EventLoggerTest {
         assertThat(capturedEvent.getName(), equalTo(eventName));
         assertThat(capturedEvent.getPublicAddress(), equalTo(expectedPublicAddress));
         assertThat(capturedEvent.getType(), equalTo("event"));
-        assertThat(capturedEvent.getFields().size(), equalTo(0));
+        assertThat(capturedEvent.getFields().size(), equalTo(1));
     }
 
     private Event captureEvent() throws IOException {

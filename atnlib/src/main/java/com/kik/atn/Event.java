@@ -17,6 +17,7 @@ class Event {
     final static String TYPE_EVENT = "event";
     final static String TYPE_ERROR = "error";
     final static String TYPE_DURATION = "operation_duration";
+    private final static String FIELD_LIB_VER = "lib_ver";
     private final static SimpleDateFormat dateFormat;
 
     static {
@@ -49,7 +50,7 @@ class Event {
         this.sdkLevel = Build.VERSION.SDK_INT;
         this.model = Build.MODEL;
         this.manufacturer = Build.MANUFACTURER;
-
+        this.payload.put(FIELD_LIB_VER, BuildConfig.VERSION_NAME);
     }
 
     Event addField(String key, Object value) {

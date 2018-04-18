@@ -41,14 +41,15 @@ public class ATNReceiverTest {
 
     @Test
     public void receiveATN_Error() throws Exception {
-        doThrow(new HttpResponseException(404))
+        HttpResponseException expectedException = new HttpResponseException(404);
+        doThrow(expectedException)
                 .when(mockAtnServer)
                 .receiveATN(anyString());
 
         receiver.receiveATN();
 
         verify(mockEventLogger).sendEvent("claim_atn_started");
-        verify(mockEventLogger).sendEvent("claim_atn_failed");
+        verify(mockEventLogger).sendErrorEvent("claim_atn_failed", expectedException);
     }
 
 
