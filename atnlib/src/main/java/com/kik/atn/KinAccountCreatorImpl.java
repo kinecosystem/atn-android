@@ -31,7 +31,7 @@ class KinAccountCreatorImpl implements KinAccountCreator {
                 account = kinClient.getAccount(0);
             } else {
                 try {
-                    account = kinClient.addAccount("");
+                    account = kinClient.addAccount();
                 } catch (CreateAccountException e) {
                     eventLogger.sendErrorEvent("add_account_failed", e);
                 }

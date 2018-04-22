@@ -65,7 +65,7 @@ public class ATNAccountOnBoardingTest {
     @Test
     public void onBoard_ActivateAccountFailed_OnBoardingFailure() throws Exception {
         OperationFailedException expectedException = new OperationFailedException("some error");
-        doThrow(expectedException).when(mockKinAccount).activateSync("");
+        doThrow(expectedException).when(mockKinAccount).activateSync();
         doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
 
         assertFalse(onBoarding.onBoard(mockKinAccount));
@@ -77,13 +77,13 @@ public class ATNAccountOnBoardingTest {
     @Test
     public void onBoard_AccountNotActivated_OnBoardingSuccess() throws Exception {
         OperationFailedException expectedException = new OperationFailedException("some error");
-        doThrow(expectedException).when(mockKinAccount).activateSync("");
+        doThrow(expectedException).when(mockKinAccount).activateSync();
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 return null;
             }
-        }).when(mockKinAccount).activateSync("");
+        }).when(mockKinAccount).activateSync();
         doThrow(new AccountNotActivatedException("")).when(mockKinAccount).getBalanceSync();
 
         assertTrue(onBoarding.onBoard(mockKinAccount));

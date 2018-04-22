@@ -93,7 +93,7 @@ class ATNAccountOnBoarding {
 
     private boolean activateAccount(KinAccount account) {
         try {
-            account.activateSync("");
+            account.activateSync();
             eventLogger.sendEvent("trustline_setup_succeeded");
             return true;
         } catch (OperationFailedException e) {

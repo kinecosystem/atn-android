@@ -80,7 +80,7 @@ public class IntegrationTests {
 
         verify(mockKinAccount, timeout(1000).times(1))
                 .sendTransactionSync(eq("GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU")
-                        , anyString(), eq(new BigDecimal(1.0)));
+                        , eq(new BigDecimal(1.0)));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class IntegrationTests {
 
         verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
         verify(mockKinAccount, timeout(1000).times(1)).getBalanceSync();
-        verify(mockKinAccount, timeout(1000).times(1)).sendTransactionSync(anyString(), anyString(), (BigDecimal) any());
+        verify(mockKinAccount, timeout(1000).times(1)).sendTransactionSync(anyString(), (BigDecimal) any());
         verifyNoMoreInteractions(mockKinAccount);
     }
 
@@ -190,7 +190,7 @@ public class IntegrationTests {
         inOrder.verify(mockATNServer, timeout(1000).times(1))
                 .receiveATN(PUBLIC_ADDRESS);
         inOrder.verify(mockKinAccount, timeout(1000).times(1))
-                .sendTransactionSync(anyString(), anyString(), (BigDecimal) any());
+                .sendTransactionSync(anyString(), (BigDecimal) any());
     }
 
     @Test
@@ -213,7 +213,7 @@ public class IntegrationTests {
 
         InOrder inOrder = inOrder(mockKinAccount, mockATNServer);
         inOrder.verify(mockKinAccount, timeout(1000).times(1))
-                .sendTransactionSync(anyString(), anyString(), (BigDecimal) any());
+                .sendTransactionSync(anyString(), (BigDecimal) any());
         inOrder.verify(mockATNServer, timeout(1000).times(1))
                 .receiveATN(PUBLIC_ADDRESS);
     }
@@ -255,7 +255,7 @@ public class IntegrationTests {
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
 
         verify(mockKinAccount, timeout(1000).times(1))
-                .sendTransactionSync(anyString(), anyString(), (BigDecimal) any());
+                .sendTransactionSync(anyString(), (BigDecimal) any());
         verifyZeroInteractions(mockATNServer);
 
         sleep(1010);

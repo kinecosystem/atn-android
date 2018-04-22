@@ -24,7 +24,7 @@ class ATNSender {
             eventLogger.sendEvent("send_atn_started");
             try {
                 EventLogger.DurationLogger durationLogger = eventLogger.startDurationLogging();
-                account.sendTransactionSync(config.getAtnAddress(), "", new BigDecimal(1.0));
+                account.sendTransactionSync(config.getAtnAddress(), new BigDecimal(1.0));
                 durationLogger.report("send_atn_succeeded");
             } catch (Exception ex) {
                 eventLogger.sendErrorEvent("send_atn_failed", ex);

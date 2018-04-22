@@ -60,19 +60,19 @@ public class ATNSenderTest {
 
     @Test
     public void sendATN_Success() throws Exception {
-        when(mockKinAccount.sendTransactionSync(anyString(), anyString(), (BigDecimal) any()))
+        when(mockKinAccount.sendTransactionSync(anyString(), (BigDecimal) any()))
                 .thenReturn(dummyTransactionId);
 
         sender.sendATN();
 
-        verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
+        verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, new BigDecimal("1"));
         verify(mockEventLogger).sendEvent("send_atn_started");
         verify(mockEventLogger).sendDurationEvent(eq("send_atn_succeeded"), anyLong());
     }
 
     @Test
     public void sendAFN_SuccessfulTransaction_ReportDuration() throws Exception {
-        when(mockKinAccount.sendTransactionSync(anyString(), anyString(), (BigDecimal) any()))
+        when(mockKinAccount.sendTransactionSync(anyString(), (BigDecimal) any()))
                 .thenAnswer(new Answer<TransactionId>() {
                     @Override
                     public TransactionId answer(InvocationOnMock invocation) throws Throwable {
@@ -92,12 +92,12 @@ public class ATNSenderTest {
     @Test
     public void sendATN_SendTransactionFailure_ReportFailure() throws Exception {
         OperationFailedException expectedException = new OperationFailedException("some error");
-        when(mockKinAccount.sendTransactionSync(anyString(), anyString(), (BigDecimal) any()))
+        when(mockKinAccount.sendTransactionSync(anyString(), (BigDecimal) any()))
                 .thenThrow(expectedException);
 
         sender.sendATN();
 
-        verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
+        verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, new BigDecimal("1"));
         verify(mockEventLogger).sendErrorEvent("send_atn_failed", expectedException);
     }
 
@@ -106,12 +106,12 @@ public class ATNSenderTest {
         OperationFailedException expectedException = new TransactionFailedException(
                 "op_failed", Collections.singletonList("underfunded")
         );
-        when(mockKinAccount.sendTransactionSync(anyString(), anyString(), (BigDecimal) any()))
+        when(mockKinAccount.sendTransactionSync(anyString(), (BigDecimal) any()))
                 .thenThrow(expectedException);
 
         sender.sendATN();
 
-        verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, "", new BigDecimal("1"));
+        verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, new BigDecimal("1"));
         verify(mockEventLogger).sendErrorEvent("send_atn_failed", expectedException);
     }
 
