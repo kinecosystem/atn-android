@@ -3,6 +3,8 @@ package com.kik.atn;
 
 import android.util.Log;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
 
 class AndroidLogger {
@@ -53,6 +55,13 @@ class AndroidLogger {
     }
 
     String getPrintableStackTrace(Throwable t) {
-        return Log.getStackTraceString(t);
+        String stackTrace = Log.getStackTraceString(t);
+        if (stackTrace == null || stackTrace.isEmpty()) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            stackTrace = sw.toString();
+        }
+        return stackTrace;
     }
 }
