@@ -25,7 +25,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.github.kinecosystem:kin-core-android:90451ca416d76f7f071977bad2eee84e9260e151'
+    implementation 'com.github.kinecosystem:kin-core-android:014ef5eeec99104c3605226c64f6f6768e9d5e2f'
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.google.code.gson:gson:2.4'
     implementation 'com.squareup.okhttp3:okhttp:3.9.1'
