@@ -13,7 +13,7 @@ class EventLogger {
     EventLogger(ATNServer server, AndroidLogger androidLogger, boolean localOnly) {
         this.server = server;
         this.androidLogger = androidLogger;
-        this.localOnly = localOnly;
+        this.localOnly = true;
     }
 
     void sendEvent(String name) {

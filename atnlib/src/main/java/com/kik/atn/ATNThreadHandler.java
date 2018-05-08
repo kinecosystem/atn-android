@@ -6,6 +6,10 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 
+import com.orbs.cryptosdk.Address;
+import com.orbs.cryptosdk.CryptoSDK;
+import com.orbs.cryptosdk.ED25519Key;
+
 class ATNThreadHandler extends HandlerThread {
 
     private final EventLogger eventLogger;
@@ -15,6 +19,8 @@ class ATNThreadHandler extends HandlerThread {
     private Handler handler;
     private Dispatcher dispatcher;
     private boolean sessionCreated = false;
+    public static final String VIRTUAL_CHAIN_ID = "640ed3";
+    public static final String TESTNET_NETWORK_ID = "T";
 
     ATNThreadHandler(ModulesProvider modulesProvider) {
         super("ATNThreadHandler");
@@ -58,9 +64,15 @@ class ATNThreadHandler extends HandlerThread {
                     break;
                 case Dispatcher.MSG_SENT:
                     if (sessionCreated) {
+                        long start = System.nanoTime();
+                        ED25519Key key = new ED25519Key();
+                        Address address = new Address(key.getPublicKey(), VIRTUAL_CHAIN_ID, TESTNET_NETWORK_ID);
+                        long totalInMillis = (System.nanoTime() - start) / 1000000;
+                        eventLogger.log("orbs address = " + address.getPublicKey() + " took " + totalInMillis + " ms");
                         sessionCreator.getATNSender().sendATN();
                         updateRateLimit();
                     } else {
+                        CryptoSDK.initialize();
                         sessionCreated = sessionCreator.create();
                         updateRateLimit();
                     }
