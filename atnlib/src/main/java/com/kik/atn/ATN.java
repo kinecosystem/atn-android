@@ -4,6 +4,11 @@ package com.kik.atn;
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
+import static com.kik.atn.Dispatcher.MessageType.MSG_RECEIVE;
+import static com.kik.atn.Dispatcher.MessageType.MSG_RECEIVE_ORBS;
+import static com.kik.atn.Dispatcher.MessageType.MSG_SENT;
+import static com.kik.atn.Dispatcher.MessageType.MSG_SENT_ORBS;
+
 public class ATN {
 
     private final Initializer initializer;
@@ -20,16 +25,17 @@ public class ATN {
     }
 
     public void onMessageSent(Context context) {
-        sendMessage(context, Dispatcher.MSG_SENT);
+        sendMessage(context, MSG_SENT, MSG_SENT_ORBS);
     }
 
     public void onMessageReceived(Context context) {
-        sendMessage(context, Dispatcher.MSG_RECEIVE);
+        sendMessage(context, MSG_RECEIVE, MSG_RECEIVE_ORBS);
     }
 
-    private void sendMessage(Context context, int msg) {
+    private void sendMessage(Context context, int msg, int orbsMsg) {
         if (initializer.isInitialized(getModulesProvider(context))) {
             initializer.getDispatcher().dispatch(initializer.getHandler(), msg);
+            initializer.getOrbsDispatcher().dispatch(initializer.getHandler(), orbsMsg);
         }
     }
 

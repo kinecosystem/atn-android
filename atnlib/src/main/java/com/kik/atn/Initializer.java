@@ -29,4 +29,8 @@ class Initializer {
     Dispatcher getDispatcher() {
         return atnThreadHandler.getDispatcher();
     }
+
+    Dispatcher getOrbsDispatcher() {
+        return atnThreadHandler.getOrbsDispatcher();
+    }
 }

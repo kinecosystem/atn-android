@@ -7,27 +7,34 @@ import android.text.format.DateUtils;
 
 import java.lang.annotation.Retention;
 
+import static com.kik.atn.Dispatcher.MessageType.MSG_RECEIVE;
+import static com.kik.atn.Dispatcher.MessageType.MSG_RECEIVE_ORBS;
+import static com.kik.atn.Dispatcher.MessageType.MSG_SENT;
+import static com.kik.atn.Dispatcher.MessageType.MSG_SENT_ORBS;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 class Dispatcher {
 
-    static final int MSG_RECEIVE = 0;
-    static final int MSG_SENT = 1;
     private static final long DEFAULT_DELAY = 5000;
     private final ATNThreadHandler handler;
     private final AndroidLogger logger;
+    private final int[] supportedMessages;
     private long rateLimitInMillis;
     private long lastAllowedTime;
 
     @Retention(SOURCE)
-    @IntDef({MSG_RECEIVE, MSG_SENT})
+    @IntDef({MSG_RECEIVE, MSG_SENT, MSG_RECEIVE_ORBS, MSG_SENT_ORBS})
     @interface MessageType {
-
+        int MSG_RECEIVE = 0;
+        int MSG_SENT = 1;
+        int MSG_RECEIVE_ORBS = 2;
+        int MSG_SENT_ORBS = 3;
     }
 
-    Dispatcher(ATNThreadHandler threadHandler, AndroidLogger logger) {
+    Dispatcher(ATNThreadHandler threadHandler, AndroidLogger logger, int[] supportedMessages) {
         this.handler = threadHandler;
         this.logger = logger;
+        this.supportedMessages = supportedMessages;
         this.rateLimitInMillis = DEFAULT_DELAY;
     }
 
@@ -44,8 +51,7 @@ class Dispatcher {
     }
 
     private boolean isAllowed() {
-        if (handler.getHandler().hasMessages(Dispatcher.MSG_RECEIVE) ||
-                handler.getHandler().hasMessages(Dispatcher.MSG_SENT)
+        if (doesHandlerHasMessages()
                 || handler.isBusy()
                 || System.currentTimeMillis() - rateLimitInMillis < lastAllowedTime) {
             logger.log("RateLimit - dropping request");
@@ -53,5 +59,14 @@ class Dispatcher {
         }
         lastAllowedTime = System.currentTimeMillis();
         return true;
+    }
+
+    private boolean doesHandlerHasMessages() {
+        for (int msg : supportedMessages) {
+            if (handler.getHandler().hasMessages(msg)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
