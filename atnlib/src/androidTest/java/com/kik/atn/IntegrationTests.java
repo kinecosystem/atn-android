@@ -71,11 +71,38 @@ public class IntegrationTests {
         //for send transaction request
         mockConfiguration(true, false);
 
+        //will trigger onboarding
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         //should be dropped by rate limiter
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         sleep(1010);
+        //will trigger ATN sending
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
+        verify(mockKinAccount, timeout(1000).times(1))
+                .sendTransactionSync(eq("GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU")
+                        , eq(new BigDecimal(1.0)));
+    }
+
+    @Test
+    public void init_WithOrbsOnboarding() throws Exception {
+        //configuration
+        mockConfiguration(true, false);
+        //not onboarded yet
+        doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
+        //create account
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        //fund with ATN
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        //for send transaction request
+        mockConfiguration(true, true);
+
+        //will trigger onboarding for both ATN and ORBS
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        //should be dropped by rate limiter
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        sleep(1010);
+        //will trigger sending ATN + Orbs
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
         verify(mockKinAccount, timeout(1000).times(1))

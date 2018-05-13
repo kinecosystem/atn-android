@@ -26,7 +26,8 @@ class ATNThreadHandler extends HandlerThread {
                 modulesProvider.kinAccountCreator(),
                 modulesProvider.configurationProvider(),
                 modulesProvider.accountOnboarding());
-        orbsSessionCreator = new OrbsSessionCreator(modulesProvider.eventLogger(),
+        orbsSessionCreator = new OrbsSessionCreator(modulesProvider.getOrbsWallet(),
+                modulesProvider.eventLogger(),
                 modulesProvider.atnServer(),
                 modulesProvider.kinAccountCreator(),
                 modulesProvider.configurationProvider());

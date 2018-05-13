@@ -6,6 +6,7 @@ import android.content.Context;
 class ModulesProviderImpl extends ModulesProvider {
 
     private static final long MIN_UPDATE_INTERVAL_MILLIS = 1000 * 60 * 10; //10 Min
+    private static final String ORBS_ENDPOINT = "https://orbs.com";
 
     ModulesProviderImpl(Context context) {
         super(context);
@@ -19,5 +20,6 @@ class ModulesProviderImpl extends ModulesProvider {
         this.configurationProvider = new ConfigurationProvider(atnServer, eventLogger, MIN_UPDATE_INTERVAL_MILLIS);
         this.onboarding = new ATNAccountOnBoarding(eventLogger, atnServer);
         this.kinAccountCreator = new KinAccountCreatorImpl(context, eventLogger);
+        this.orbsWallet = new OrbsWallet(new LocalStore(context), ORBS_ENDPOINT);
     }
 }
