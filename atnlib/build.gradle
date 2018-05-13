@@ -24,7 +24,11 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.aar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation ('com.orbs.sdk:crypto-sdk:0.0.5'){
+        exclude group: 'com.android.support'
+        exclude module: 'appcompat-v7'
+    }
     implementation 'com.github.kinecosystem:kin-core-android:1e2133e9318f57807834175d31a66265a06d1e38'
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.google.code.gson:gson:2.4'
