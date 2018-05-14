@@ -52,9 +52,8 @@ class OrbsWallet {
         return publicAddress;
     }
 
-    void sendOrbs() {
+    void sendOrbs(String serverAccountAddress, BigDecimal amount) throws Exception {
         //TODO
-        //orbsContract.sendTransaction();
     }
 
     BigDecimal getBalance() {

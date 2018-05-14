@@ -23,7 +23,7 @@ class OrbsReceiver {
         if (config.orbs().isEnabled()) {
             eventLogger.sendOrbsEvent("claim_orbs_started");
             try {
-                atnServer.receiveORBS(publicKey);
+                atnServer.receiveOrbs(publicKey);
                 eventLogger.sendOrbsEvent("claim_orbs_succeeded");
             } catch (IOException e) {
                 eventLogger.sendOrbsErrorEvent("claim_orbs_failed", e);

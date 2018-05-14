@@ -63,7 +63,7 @@ class ATNServer {
         sendPublicAddressRequest(publicAddress, "", URL_CLAIM_ATN);
     }
 
-    void receiveORBS(String publicAddress) throws IOException {
+    void receiveOrbs(String publicAddress) throws IOException {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {

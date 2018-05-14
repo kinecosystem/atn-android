@@ -6,6 +6,16 @@ import android.os.Build;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import static com.kik.atn.Events.ACCOUNT_FUNDING_FAILED;
+import static com.kik.atn.Events.ACCOUNT_FUNDING_SUCCEEDED;
+import static com.kik.atn.Events.ONBOARD_ACCOUNT_NOT_FUNDED;
+import static com.kik.atn.Events.ONBOARD_FAILED;
+import static com.kik.atn.Events.ONBOARD_LOAD_WALLET_FAILED;
+import static com.kik.atn.Events.ONBOARD_LOAD_WALLET_STARTED;
+import static com.kik.atn.Events.ONBOARD_LOAD_WALLET_SUCCEEDED;
+import static com.kik.atn.Events.ONBOARD_STARTED;
+import static com.kik.atn.Events.ONBOARD_SUCCEEDED;
+
 class OrbsSessionCreator {
 
     private final OrbsWallet orbsWallet;
@@ -30,7 +40,7 @@ class OrbsSessionCreator {
         if (isEnable(publicAddress)) {
             boolean onboardSucceeded = onboard();
             if (onboardSucceeded) {
-                orbsSender = new OrbsSender(orbsWallet.getPublicAddress(), eventLogger, configurationProvider);
+                orbsSender = new OrbsSender(orbsWallet, eventLogger, configurationProvider);
                 orbsReceiver = new OrbsReceiver(atnServer, eventLogger, configurationProvider, orbsWallet.getPublicAddress());
                 return true;
             }
@@ -44,38 +54,38 @@ class OrbsSessionCreator {
     }
 
     private boolean onboard() {
-        eventLogger.sendOrbsEvent("onboard_started");
+        eventLogger.sendOrbsEvent(ONBOARD_STARTED);
         if (createAccount() && fundAccount()) {
-            eventLogger.sendOrbsEvent("onboard_succeeded");
+            eventLogger.sendOrbsEvent(ONBOARD_SUCCEEDED);
             return true;
         }
-        eventLogger.sendOrbsEvent("onboard_failed");
+        eventLogger.sendOrbsEvent(ONBOARD_FAILED);
         return false;
 
     }
 
     private boolean createAccount() {
-        eventLogger.sendEvent("onboard_load_wallet_started");
+        eventLogger.sendOrbsEvent(ONBOARD_LOAD_WALLET_STARTED);
         try {
             orbsWallet.loadWallet();
         } catch (Exception e) {
-            eventLogger.sendOrbsErrorEvent("onboard_load_wallet_failed", e);
+            eventLogger.sendOrbsErrorEvent(ONBOARD_LOAD_WALLET_FAILED, e);
             return false;
         }
         eventLogger.setOrbsPublicAddress(orbsWallet.getPublicAddress());
-        eventLogger.sendEvent("onboard_load_wallet_succeeded");
+        eventLogger.sendOrbsEvent(ONBOARD_LOAD_WALLET_SUCCEEDED);
         return true;
     }
 
     private boolean fundAccount() {
-        if (orbsWallet.getBalance().compareTo(new BigDecimal("0.0")) < 0) {
-            eventLogger.sendOrbsEvent("onboard_account_not_funded");
+        if (orbsWallet.getBalance().compareTo(new BigDecimal("0.0")) <= 0) {
+            eventLogger.sendOrbsEvent(ONBOARD_ACCOUNT_NOT_FUNDED);
             try {
                 atnServer.fundOrbsAccount(orbsWallet.getPublicAddress());
-                eventLogger.sendOrbsEvent("account_funding_succeeded");
+                eventLogger.sendOrbsEvent(ACCOUNT_FUNDING_SUCCEEDED);
                 return true;
             } catch (IOException e) {
-                eventLogger.sendOrbsErrorEvent("account_funding_failed", e);
+                eventLogger.sendOrbsErrorEvent(ACCOUNT_FUNDING_FAILED, e);
                 return false;
             }
         } else {
