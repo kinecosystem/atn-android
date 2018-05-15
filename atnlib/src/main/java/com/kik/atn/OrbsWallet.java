@@ -47,7 +47,11 @@ class OrbsWallet {
     void loadWallet() throws Exception {
         publicAddress = localStore.getString(KEY_ORBS_PUBLIC_ADDRESS);
         privateKey = localStore.getString(KEY_ORBS_PRIVATE_KEY);
-        initOrbsApis();
+        if (publicAddress != null && privateKey != null) {
+            initOrbsApis();
+        } else {
+            throw new IllegalStateException("Error loading wallet, publicAddress = " + publicAddress + ", privateKey = " + privateKey);
+        }
     }
 
     private void initOrbsApis() throws Exception {
