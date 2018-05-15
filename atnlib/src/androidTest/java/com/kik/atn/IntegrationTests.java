@@ -165,14 +165,11 @@ public class IntegrationTests {
         mockConfiguration(false, false);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
+        verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
+        verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
+        verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
     }
 
     @Test
