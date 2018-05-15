@@ -23,9 +23,9 @@ class ATNServer {
 
     private static final String URL_CREATE_ACCOUNT = "accounts/%s";
     private static final String URL_FUND = "accounts/%s/fundings";
-    private static final String URL_FUND_ORBS = "accounts/%s/fundings";
+    private static final String URL_FUND_ORBS = "orbs/accounts/%s/fundings";
     private static final String URL_CLAIM_ATN = "accounts/%s/claims";
-    private static final String URL_CLAIM_ORBS = "accounts/%s/claims";
+    private static final String URL_CLAIM_ORBS = "orbs/accounts/%s/claims";
     private static final String URL_SEND_EVENT = "events";
     private static final String URL_GET_CONFIGURATION = "accounts/%s/config";
     private final OkHttpClient okHttpClient;
@@ -51,12 +51,7 @@ class ATNServer {
     }
 
     void fundOrbsAccount(String publicAddress) throws IOException {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        //TODO
+        sendPublicAddressRequest(publicAddress, "", URL_FUND_ORBS);
     }
 
     void receiveATN(String publicAddress) throws IOException {
@@ -64,12 +59,7 @@ class ATNServer {
     }
 
     void receiveOrbs(String publicAddress) throws IOException {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        //TODO
+        sendPublicAddressRequest(publicAddress, "", URL_CLAIM_ORBS);
     }
 
     void sendEvent(Event event) throws IOException {
