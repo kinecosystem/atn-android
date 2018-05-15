@@ -18,6 +18,7 @@ class Dispatcher {
     private static final long DEFAULT_DELAY = 5000;
     private final ATNThreadHandler handler;
     private final AndroidLogger logger;
+    private final String dispatcherName;
     private final int[] supportedMessages;
     private long rateLimitInMillis;
     private long lastAllowedTime;
@@ -31,9 +32,10 @@ class Dispatcher {
         int MSG_SENT_ORBS = 3;
     }
 
-    Dispatcher(ATNThreadHandler threadHandler, AndroidLogger logger, int[] supportedMessages) {
+    Dispatcher(ATNThreadHandler threadHandler, AndroidLogger logger, String dispatcherName, int[] supportedMessages) {
         this.handler = threadHandler;
         this.logger = logger;
+        this.dispatcherName = dispatcherName;
         this.supportedMessages = supportedMessages;
         this.rateLimitInMillis = DEFAULT_DELAY;
     }
@@ -54,7 +56,7 @@ class Dispatcher {
         if (doesHandlerHasMessages()
                 || handler.isBusy()
                 || System.currentTimeMillis() - rateLimitInMillis < lastAllowedTime) {
-            logger.log("RateLimit - dropping request");
+            logger.log("Dispatcher (" + dispatcherName + ") rate limit - dropping request");
             return false;
         }
         lastAllowedTime = System.currentTimeMillis();
