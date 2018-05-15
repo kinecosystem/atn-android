@@ -11,12 +11,12 @@ import java.math.BigDecimal;
 
 class OrbsWallet {
 
-    private static final String KEY_ORBS_PUBLIC_ADDRESS = "key_orbs_public_address";
-    private static final String KEY_ORBS_PRIVATE_KEY = "key_orbs_private_key";
+    static final String KEY_ORBS_PUBLIC_ADDRESS = "key_orbs_public_address";
+    static final String KEY_ORBS_PRIVATE_KEY = "key_orbs_private_key";
     private static final String VIRTUAL_CHAIN_ID = "640ed3";
     private static final String NETWORK_ID_TESTNET = "T";
     private static final String CONTRACT_NAME = "";
-    private final LocalStore localStore;
+    private final Store localStore;
     private final String orbsEndpoint;
     private String publicAddress;
     private String privateKey;
@@ -24,13 +24,14 @@ class OrbsWallet {
     private OrbsContract orbsContract;
     private boolean isLoaded;
 
-    OrbsWallet(LocalStore localStore, String orbsEndpoint) {
+    OrbsWallet(Store localStore, String orbsEndpoint) {
         this.localStore = localStore;
         this.orbsEndpoint = orbsEndpoint;
     }
 
     boolean isWalletCreated() {
-        return isLoaded || localStore.getString(KEY_ORBS_PUBLIC_ADDRESS) == null || localStore.getString(KEY_ORBS_PRIVATE_KEY) == null;
+        return isLoaded ||
+                (localStore.getString(KEY_ORBS_PUBLIC_ADDRESS) != null && localStore.getString(KEY_ORBS_PRIVATE_KEY) != null);
     }
 
     void createWallet() throws Exception {

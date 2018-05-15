@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
-class LocalStore {
+class LocalStore implements Store {
     private static final String SHARED_PREF_NAME = "atn_data";
     private final SharedPreferences sharedPref;
 
@@ -13,12 +13,14 @@ class LocalStore {
         sharedPref = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    void saveString(String key, String data) {
+    @Override
+    public void saveString(String key, String data) {
         sharedPref.edit().putString(key, data).apply();
     }
 
+    @Override
     @Nullable
-    String getString(String key) {
+    public String getString(String key) {
         return sharedPref.getString(key, null);
     }
 }
