@@ -29,23 +29,31 @@ class OrbsWallet {
         this.orbsEndpoint = orbsEndpoint;
     }
 
-    void loadWallet() throws Exception {
-        if (isLoaded) {
-            return;
-        }
-        isLoaded = true;
-        CryptoSDK.initialize();
+    boolean isWalletCreated() {
+        return isLoaded || localStore.getString(KEY_ORBS_PUBLIC_ADDRESS) == null || localStore.getString(KEY_ORBS_PRIVATE_KEY) == null;
+    }
 
+    void createWallet() throws Exception {
+        CryptoSDK.initialize();
+        ED25519Key key = new ED25519Key();
+        publicAddress = key.getPublicKey();
+        privateKey = key.getPrivateKeyUnsafe();
+        localStore.saveString(KEY_ORBS_PUBLIC_ADDRESS, publicAddress);
+        localStore.saveString(KEY_ORBS_PRIVATE_KEY, privateKey);
+        initOrbsApis();
+    }
+
+    void loadWallet() throws Exception {
         publicAddress = localStore.getString(KEY_ORBS_PUBLIC_ADDRESS);
         privateKey = localStore.getString(KEY_ORBS_PRIVATE_KEY);
-        if (publicAddress == null) {
-            ED25519Key key = new ED25519Key();
-            publicAddress = key.getPublicKey();
-            privateKey = key.getPrivateKeyUnsafe();
-        }
+        initOrbsApis();
+    }
+
+    private void initOrbsApis() throws Exception {
         Address address = new Address(publicAddress, VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
         orbsClient = new OrbsClient(orbsEndpoint, address);
         orbsContract = new OrbsContract(orbsClient, CONTRACT_NAME);
+        isLoaded = true;
     }
 
     String getPublicAddress() {

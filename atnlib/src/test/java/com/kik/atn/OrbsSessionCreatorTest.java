@@ -24,6 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -90,7 +91,32 @@ public class OrbsSessionCreatorTest {
     }
 
     @Test
-    public void create_NotFunded_Success() throws Exception {
+    public void create_WalletNotCreatedAndNotFunded_OnBoardSuccess() throws Exception {
+        mockWalletCreated(false);
+        mockNotFundedAccount();
+
+        boolean result = sessionCreator.create();
+
+        assertThat(result, is(true));
+        assertThat(sessionCreator.getOrbsReceiver(), notNullValue());
+        assertThat(sessionCreator.getOrbsSender(), notNullValue());
+        InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_STARTED);
+        inOrder.verify(mockOrbsWallet).createWallet();
+        inOrder.verify(mockEventLogger).setOrbsPublicAddress(ORBS_ACCOUNT_ADDRESS);
+        inOrder.verify(mockOrbsWallet, times(0)).loadWallet();
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
+        inOrder.verify(mockOrbsWallet).fundAccount();
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ACCOUNT_FUNDING_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
+        verifyNoMoreInteractions(mockEventLogger);
+    }
+
+    @Test
+    public void create_WalletCreatedButNotFunded_OnBoardSuccess() throws Exception {
+        mockWalletCreated(true);
         mockNotFundedAccount();
 
         boolean result = sessionCreator.create();
@@ -102,32 +128,124 @@ public class OrbsSessionCreatorTest {
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
         inOrder.verify(mockOrbsWallet).loadWallet();
+        inOrder.verify(mockEventLogger).setOrbsPublicAddress(ORBS_ACCOUNT_ADDRESS);
+        inOrder.verify(mockOrbsWallet, times(0)).createWallet();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
         inOrder.verify(mockOrbsWallet).fundAccount();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ACCOUNT_FUNDING_SUCCEEDED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
+        verifyNoMoreInteractions(mockEventLogger);
     }
 
     @Test
-    public void create_AlreadyFunded_Success() throws Exception {
+    public void create_AlreadyOnboarded_CreateSessionSuccess() throws Exception {
+        mockWalletCreated(true);
         mockFundedAccount();
 
         boolean result = sessionCreator.create();
 
         assertThat(result, is(true));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.SESSION_CREATION_STARTED);
         inOrder.verify(mockOrbsWallet).loadWallet();
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
-        inOrder.verify(mockEventLogger, times(0)).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
-        inOrder.verify(mockOrbsWallet, times(0)).fundAccount();
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
+        inOrder.verify(mockEventLogger).setOrbsPublicAddress(ORBS_ACCOUNT_ADDRESS);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.SESSION_CREATION_SUCCEEDED);
+        verifyNoMoreInteractions(mockEventLogger);
     }
 
     @Test
-    public void create_LoadingWalletFailure_Failure() throws Exception {
+    public void create_AlreadyOnboardedLoadWalletError_CreateSessionFailure() throws Exception {
+        mockWalletCreated(true);
+        mockFundedAccount();
+        Exception expectedException = new Exception("some error");
+        doThrow(expectedException).when(mockOrbsWallet).loadWallet();
+
+        boolean result = sessionCreator.create();
+
+        assertThat(result, is(false));
+        InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.SESSION_CREATION_STARTED);
+        inOrder.verify(mockOrbsWallet).loadWallet();
+        inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.SESSION_CREATION_FAILED, expectedException);
+        verifyNoMoreInteractions(mockEventLogger);
+    }
+
+    @Test
+    public void create_NotOnboardedAndFundError_OnboardingFailure() throws Exception {
+        mockWalletCreated(false);
+        mockNotFundedAccount();
+
+        IOException expectedException = new IOException("some error");
+        doThrow(expectedException).when(mockOrbsWallet).fundAccount();
+
+        boolean result = sessionCreator.create();
+
+        assertThat(result, is(false));
+        InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_STARTED);
+        inOrder.verify(mockOrbsWallet).createWallet();
+        inOrder.verify(mockEventLogger).setOrbsPublicAddress(ORBS_ACCOUNT_ADDRESS);
+        inOrder.verify(mockOrbsWallet, times(0)).loadWallet();
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
+        inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.ACCOUNT_FUNDING_FAILED, expectedException);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_FAILED);
+        verifyNoMoreInteractions(mockEventLogger);
+    }
+
+    @Test
+    public void create_NotOnboardedAndCreateWalletError_OnboardingFailure() throws Exception {
+        mockWalletCreated(false);
+        mockNotFundedAccount();
+
+        IOException expectedException = new IOException("some error");
+        doThrow(expectedException).when(mockOrbsWallet).createWallet();
+
+        boolean result = sessionCreator.create();
+
+        assertThat(result, is(false));
+        InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_STARTED);
+        inOrder.verify(mockOrbsWallet).createWallet();
+        inOrder.verify(mockOrbsWallet, times(0)).loadWallet();
+        inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.ONBOARD_CREATE_WALLET_FAILED, expectedException);
+        inOrder.verify(mockEventLogger, times(0)).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
+        inOrder.verify(mockEventLogger, times(0)).sendOrbsErrorEvent(Events.ACCOUNT_FUNDING_FAILED, expectedException);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_FAILED);
+        verifyNoMoreInteractions(mockEventLogger);
+    }
+
+    @Test
+    public void create_WalletCreatedNotFundedAndFundError_OnboardingFailure() throws Exception {
+        mockWalletCreated(true);
+        mockNotFundedAccount();
+
+        IOException expectedException = new IOException("some error");
+        doThrow(expectedException).when(mockOrbsWallet).fundAccount();
+
+        boolean result = sessionCreator.create();
+
+        assertThat(result, is(false));
+        InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
+        inOrder.verify(mockOrbsWallet).loadWallet();
+        inOrder.verify(mockEventLogger).setOrbsPublicAddress(ORBS_ACCOUNT_ADDRESS);
+        inOrder.verify(mockOrbsWallet, times(0)).createWallet();
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
+        inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.ACCOUNT_FUNDING_FAILED, expectedException);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_FAILED);
+        verifyNoMoreInteractions(mockEventLogger);
+    }
+
+    @Test
+    public void create_WalletCreatedNotFundedAndLoadWalletError_OnboardingFailure() throws Exception {
+        mockWalletCreated(true);
+        mockNotFundedAccount();
         Exception expectedException = new Exception("some error");
         doThrow(expectedException).when(mockOrbsWallet).loadWallet();
 
@@ -144,24 +262,8 @@ public class OrbsSessionCreatorTest {
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_FAILED);
     }
 
-    @Test
-    public void create_FundsOrbsFailure_Failure() throws Exception {
-        mockNotFundedAccount();
-
-        IOException expectedException = new IOException("some error");
-        doThrow(expectedException).when(mockOrbsWallet).fundAccount();
-
-        boolean result = sessionCreator.create();
-
-        assertThat(result, is(false));
-        InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
-        inOrder.verify(mockOrbsWallet).loadWallet();
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
-        inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.ACCOUNT_FUNDING_FAILED, expectedException);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_FAILED);
+    private void mockWalletCreated(boolean isWalletCreated) {
+        when(mockOrbsWallet.isWalletCreated()).thenReturn(isWalletCreated);
     }
 
     private void mockNotFundedAccount() {
