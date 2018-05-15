@@ -52,12 +52,16 @@ class OrbsWallet {
         return publicAddress;
     }
 
-    void sendOrbs(String serverAccountAddress, BigDecimal amount) throws Exception {
+    void sendOrbs(String address, BigDecimal amount) throws Exception {
         //TODO
     }
 
     BigDecimal getBalance() {
         //TODO
         return BigDecimal.ZERO;
+    }
+
+    void fundAccount() throws Exception {
+        //TODO call init function on contract
     }
 }

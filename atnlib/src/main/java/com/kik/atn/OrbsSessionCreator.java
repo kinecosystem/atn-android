@@ -3,7 +3,6 @@ package com.kik.atn;
 
 import android.os.Build;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 
 import static com.kik.atn.Events.ACCOUNT_FUNDING_FAILED;
@@ -81,10 +80,10 @@ class OrbsSessionCreator {
         if (orbsWallet.getBalance().compareTo(new BigDecimal("0.0")) <= 0) {
             eventLogger.sendOrbsEvent(ONBOARD_ACCOUNT_NOT_FUNDED);
             try {
-                atnServer.fundOrbsAccount(orbsWallet.getPublicAddress());
+                orbsWallet.fundAccount();
                 eventLogger.sendOrbsEvent(ACCOUNT_FUNDING_SUCCEEDED);
                 return true;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 eventLogger.sendOrbsErrorEvent(ACCOUNT_FUNDING_FAILED, e);
                 return false;
             }

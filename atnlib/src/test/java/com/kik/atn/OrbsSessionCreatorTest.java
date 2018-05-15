@@ -104,7 +104,7 @@ public class OrbsSessionCreatorTest {
         inOrder.verify(mockOrbsWallet).loadWallet();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
-        inOrder.verify(mockAtnServer).fundOrbsAccount(ORBS_ACCOUNT_ADDRESS);
+        inOrder.verify(mockOrbsWallet).fundAccount();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ACCOUNT_FUNDING_SUCCEEDED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
     }
@@ -122,7 +122,7 @@ public class OrbsSessionCreatorTest {
         inOrder.verify(mockOrbsWallet).loadWallet();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
         inOrder.verify(mockEventLogger, times(0)).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
-        inOrder.verify(mockAtnServer, times(0)).fundOrbsAccount(anyString());
+        inOrder.verify(mockOrbsWallet, times(0)).fundAccount();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
     }
 
@@ -140,7 +140,7 @@ public class OrbsSessionCreatorTest {
         inOrder.verify(mockOrbsWallet).loadWallet();
         inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.ONBOARD_LOAD_WALLET_FAILED, expectedException);
         inOrder.verify(mockEventLogger, times(0)).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
-        inOrder.verify(mockAtnServer, times(0)).fundOrbsAccount(anyString());
+        inOrder.verify(mockOrbsWallet, times(0)).fundAccount();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_FAILED);
     }
 
@@ -149,7 +149,7 @@ public class OrbsSessionCreatorTest {
         mockNotFundedAccount();
 
         IOException expectedException = new IOException("some error");
-        doThrow(expectedException).when(mockAtnServer).fundOrbsAccount(ORBS_ACCOUNT_ADDRESS);
+        doThrow(expectedException).when(mockOrbsWallet).fundAccount();
 
         boolean result = sessionCreator.create();
 
