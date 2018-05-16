@@ -16,7 +16,7 @@ cache:
 env:
   global:
     - ANDROID_API_LEVEL=26
-    - EMULATOR_API_LEVEL=19
+    - EMULATOR_API_LEVEL=22
 
 android:
   components:
