@@ -1,7 +1,5 @@
 package com.kik.atn;
 
-import android.support.annotation.Nullable;
-
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -119,7 +117,6 @@ public class OrbsWalletTest {
             map.put(key, data);
         }
 
-        @Nullable
         @Override
         public String getString(String key) {
             return map.get(key);
