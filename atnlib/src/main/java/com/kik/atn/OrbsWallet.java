@@ -45,6 +45,7 @@ class OrbsWallet {
     }
 
     void loadWallet() throws Exception {
+        CryptoSDK.initialize();
         publicAddress = localStore.getString(KEY_ORBS_PUBLIC_ADDRESS);
         privateKey = localStore.getString(KEY_ORBS_PRIVATE_KEY);
         if (publicAddress != null && privateKey != null) {
