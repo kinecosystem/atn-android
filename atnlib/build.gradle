@@ -1,6 +1,11 @@
 apply plugin: 'com.android.library'
 apply plugin: 'jacoco'
 
+// maven plugin and group definition
+// needed for jitpack support
+apply plugin: 'maven'
+group = 'com.github.kinecosystem'
+
 android {
     compileSdkVersion 26
 
