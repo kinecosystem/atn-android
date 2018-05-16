@@ -38,7 +38,7 @@ before_script:
   - adb shell input keyevent 82 &
 
 script:
-  - ./gradlew :sample:assembleDebug
+  - ./gradlew :app:assembleDebug
   - ./gradlew jacocoTestReport
 
 after_success:
