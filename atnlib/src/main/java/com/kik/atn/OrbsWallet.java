@@ -36,12 +36,12 @@ class OrbsWallet {
 
     void createWallet() throws Exception {
         CryptoSDK.initialize();
-        ED25519Key key = new ED25519Key();
-        publicAddress = key.getPublicKey();
-        privateKey = key.getPrivateKeyUnsafe();
+        ED25519Key keyPair = new ED25519Key();
+        publicAddress = keyPair.getPublicKey();
+        privateKey = keyPair.getPrivateKeyUnsafe();
         localStore.saveString(KEY_ORBS_PUBLIC_ADDRESS, publicAddress);
         localStore.saveString(KEY_ORBS_PRIVATE_KEY, privateKey);
-        initOrbsApis();
+        initOrbsApis(keyPair);
     }
 
     void loadWallet() throws Exception {
@@ -49,15 +49,16 @@ class OrbsWallet {
         publicAddress = localStore.getString(KEY_ORBS_PUBLIC_ADDRESS);
         privateKey = localStore.getString(KEY_ORBS_PRIVATE_KEY);
         if (publicAddress != null && privateKey != null) {
-            initOrbsApis();
+            ED25519Key keyPair = new ED25519Key(publicAddress, privateKey);
+            initOrbsApis(keyPair);
         } else {
             throw new IllegalStateException("Error loading wallet, publicAddress = " + publicAddress + ", privateKey = " + privateKey);
         }
     }
 
-    private void initOrbsApis() throws Exception {
+    private void initOrbsApis(ED25519Key keyPair) throws Exception {
         Address address = new Address(publicAddress, VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
-        orbsClient = new OrbsClient(orbsEndpoint, address);
+        orbsClient = new OrbsClient(orbsEndpoint, address, keyPair);
         orbsContract = new OrbsContract(orbsClient, CONTRACT_NAME);
         isLoaded = true;
     }
