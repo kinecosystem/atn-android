@@ -1,0 +1,45 @@
+sudo: false
+language: android
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.gradle/native
+    - $HOME/.gradle/daemon
+    - $HOME/.android/build-cache
+
+    - node_modules
+
+env:
+  global:
+    - ANDROID_API_LEVEL=26
+    - EMULATOR_API_LEVEL=16
+
+android:
+  components:
+  - tools
+  - platform-tools
+  - build-tools-26.0.2
+  - android-$ANDROID_API_LEVEL
+  - android-$EMULATOR_API_LEVEL
+  - sys-img-armeabi-v7a-android-$ANDROID_API_LEVEL
+  - sys-img-armeabi-v7a-android-$EMULATOR_API_LEVEL
+
+before_script:
+  # setup android emulator
+  - echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window -camera-back none -camera-front none -verbose -memory 2048 &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+
+script:
+  - ./gradlew :sample:assembleDebug
+  - ./gradlew jacocoTestReport
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
