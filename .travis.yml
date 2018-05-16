@@ -18,7 +18,7 @@ cache:
 env:
   global:
     - ANDROID_API_LEVEL=26
-    - EMULATOR_API_LEVEL=16
+    - EMULATOR_API_LEVEL=21
 
 android:
   components:
@@ -31,14 +31,14 @@ android:
   - sys-img-armeabi-v7a-android-$EMULATOR_API_LEVEL
 
 before_script:
-  # setup android emulator
+ # setup android emulator
   - echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a
-  - emulator -avd test -no-skin -no-audio -no-window -camera-back none -camera-front none -verbose -memory 2048 &
+  - emulator -avd test -no-skin -no-window -camera-back none -camera-front none -verbose -memory 2048 &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
 
 script:
-  - ./gradlew :sample:assembleDebug
+  - ./gradlew :app:assembleDebug
   - ./gradlew jacocoTestReport
 
 after_success:
