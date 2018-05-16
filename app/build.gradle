@@ -1,6 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        release {
+            keyAlias '123456'
+            keyPassword '123456'
+            storeFile file('/Users/yossirizgan/AndroidStudioProjects/atn-android/test.keystore')
+            storePassword '123456'
+        }
+    }
+
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.kik.atn.atnsample"
@@ -12,10 +21,14 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
         }
     }
+
 }
 
 dependencies {
