@@ -7,9 +7,7 @@ final class Events {
 
     static final String ONBOARD_STARTED = "onboard_started";
     static final String ONBOARD_SUCCEEDED = "onboard_succeeded";
-    static final String SESSION_CREATION_STARTED = "session_creation_started";
-    static final String SESSION_CREATION_SUCCEEDED = "session_creation_succeeded";
-    static final String SESSION_CREATION_FAILED = "session_creation_failed";
+    static final String ONBOARD_IS_FUNDED_FAILED = "onboard_is_funded_failed";
     static final String ONBOARD_FAILED = "onboard_failed";
     static final String ONBOARD_CREATE_WALLET_STARTED = "onboard_create_wallet_started";
     static final String ONBOARD_CREATE_WALLET_SUCCEEDED = "onboard_create_wallet_succeeded";

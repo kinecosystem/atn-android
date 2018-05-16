@@ -15,7 +15,7 @@ class OrbsWallet {
     static final String KEY_ORBS_PRIVATE_KEY = "key_orbs_private_key";
     private static final String VIRTUAL_CHAIN_ID = "640ed3";
     private static final String NETWORK_ID_TESTNET = "T";
-    private static final String CONTRACT_NAME = "";
+    private static final String CONTRACT_NAME = "kinatn";
     private final Store localStore;
     private final String orbsEndpoint;
     private String publicAddress;
@@ -71,8 +71,8 @@ class OrbsWallet {
         //TODO
     }
 
-    BigDecimal getBalance() {
-        //TODO
+    BigDecimal getBalance() throws Exception {
+        String getBalance = orbsContract.call("getBalance", new Object[]{publicAddress});
         return BigDecimal.ZERO;
     }
 

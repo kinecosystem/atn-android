@@ -147,10 +147,12 @@ public class OrbsSessionCreatorTest {
 
         assertThat(result, is(true));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.SESSION_CREATION_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
         inOrder.verify(mockOrbsWallet).loadWallet();
         inOrder.verify(mockEventLogger).setOrbsPublicAddress(ORBS_ACCOUNT_ADDRESS);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.SESSION_CREATION_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
         verifyNoMoreInteractions(mockEventLogger);
     }
 
@@ -165,9 +167,11 @@ public class OrbsSessionCreatorTest {
 
         assertThat(result, is(false));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.SESSION_CREATION_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
         inOrder.verify(mockOrbsWallet).loadWallet();
-        inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.SESSION_CREATION_FAILED, expectedException);
+        inOrder.verify(mockEventLogger).sendOrbsErrorEvent(Events.ONBOARD_LOAD_WALLET_FAILED, expectedException);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_FAILED);
         verifyNoMoreInteractions(mockEventLogger);
     }
 
@@ -266,11 +270,11 @@ public class OrbsSessionCreatorTest {
         when(mockOrbsWallet.isWalletCreated()).thenReturn(isWalletCreated);
     }
 
-    private void mockNotFundedAccount() {
+    private void mockNotFundedAccount() throws Exception {
         when(mockOrbsWallet.getBalance()).thenReturn(BigDecimal.ZERO);
     }
 
-    private void mockFundedAccount() {
+    private void mockFundedAccount() throws Exception {
         when(mockOrbsWallet.getBalance()).thenReturn(BigDecimal.TEN);
     }
 
