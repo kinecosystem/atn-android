@@ -13,12 +13,10 @@ cache:
     - $HOME/.gradle/daemon
     - $HOME/.android/build-cache
 
-    - node_modules
-
 env:
   global:
     - ANDROID_API_LEVEL=26
-    - EMULATOR_API_LEVEL=21
+    - EMULATOR_API_LEVEL=26
 
 android:
   components:
