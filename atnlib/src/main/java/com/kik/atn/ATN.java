@@ -4,10 +4,6 @@ package com.kik.atn;
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
-import static com.kik.atn.Dispatcher.MessageType.MSG_RECEIVE;
-import static com.kik.atn.Dispatcher.MessageType.MSG_RECEIVE_ORBS;
-import static com.kik.atn.Dispatcher.MessageType.MSG_SENT;
-import static com.kik.atn.Dispatcher.MessageType.MSG_SENT_ORBS;
 
 public class ATN {
 
@@ -25,11 +21,11 @@ public class ATN {
     }
 
     public void onMessageSent(Context context) {
-        sendMessage(context, MSG_SENT, MSG_SENT_ORBS);
+        sendMessage(context, Dispatcher.MSG_SENT, Dispatcher.MSG_SENT_ORBS);
     }
 
     public void onMessageReceived(Context context) {
-        sendMessage(context, MSG_RECEIVE, MSG_RECEIVE_ORBS);
+        sendMessage(context, Dispatcher.MSG_RECEIVE, Dispatcher.MSG_RECEIVE_ORBS);
     }
 
     private void sendMessage(Context context, int msg, int orbsMsg) {

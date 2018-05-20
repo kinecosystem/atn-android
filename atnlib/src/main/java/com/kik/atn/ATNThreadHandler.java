@@ -39,9 +39,9 @@ class ATNThreadHandler extends HandlerThread {
             }
         });
         dispatcher = new Dispatcher(this, modulesProvider.androidLogger, "kin",
-                new int[]{Dispatcher.MessageType.MSG_SENT, Dispatcher.MessageType.MSG_SENT});
+                new int[]{Dispatcher.MSG_SENT, Dispatcher.MSG_SENT});
         orbsDispatcher = new Dispatcher(this, modulesProvider.androidLogger, "orbs",
-                new int[]{Dispatcher.MessageType.MSG_RECEIVE_ORBS, Dispatcher.MessageType.MSG_SENT_ORBS});
+                new int[]{Dispatcher.MSG_RECEIVE_ORBS, Dispatcher.MSG_SENT_ORBS});
         configurationProvider = modulesProvider.configurationProvider();
     }
 
@@ -60,13 +60,13 @@ class ATNThreadHandler extends HandlerThread {
         public void handleMessage(Message msg) {
             isBusy = true;
             switch (msg.what) {
-                case Dispatcher.MessageType.MSG_RECEIVE:
+                case Dispatcher.MSG_RECEIVE:
                     if (sessionCreated) {
                         sessionCreator.getATNReceiver().receiveATN();
                         updateRateLimit();
                     }
                     break;
-                case Dispatcher.MessageType.MSG_SENT:
+                case Dispatcher.MSG_SENT:
                     if (sessionCreated) {
                         sessionCreator.getATNSender().sendATN();
                         updateRateLimit();
@@ -75,13 +75,13 @@ class ATNThreadHandler extends HandlerThread {
                         updateRateLimit();
                     }
                     break;
-                case Dispatcher.MessageType.MSG_RECEIVE_ORBS:
+                case Dispatcher.MSG_RECEIVE_ORBS:
                     if (orbsSessionCreated) {
                         orbsSessionCreator.getOrbsReceiver().receiveOrbs();
                         updateRateLimit();
                     }
                     break;
-                case Dispatcher.MessageType.MSG_SENT_ORBS:
+                case Dispatcher.MSG_SENT_ORBS:
                     if (orbsSessionCreated) {
                         orbsSessionCreator.getOrbsSender().sendOrbs();
                         updateRateLimit();
