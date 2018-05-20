@@ -5,7 +5,7 @@ android {
         release {
             keyAlias '123456'
             keyPassword '123456'
-            storeFile file('/Users/yossirizgan/AndroidStudioProjects/atn-android/test.keystore')
+            storeFile file('../../atn-android/test.keystore')
             storePassword '123456'
         }
     }
