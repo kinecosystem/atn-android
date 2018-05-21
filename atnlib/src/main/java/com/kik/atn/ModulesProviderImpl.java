@@ -6,7 +6,7 @@ import android.content.Context;
 class ModulesProviderImpl extends ModulesProvider {
 
     private static final long MIN_UPDATE_INTERVAL_MILLIS = 1000 * 60 * 10; //10 Min
-    private static final String ORBS_ENDPOINT = "http://us-east-1.global.nodes.staging.orbs-test.com/";
+    private static final String ORBS_ENDPOINT = "http://kin.nodes.orbs.network";
 
     ModulesProviderImpl(Context context) {
         super(context);

@@ -3,6 +3,7 @@ package com.kik.atn;
 
 import com.orbs.client.OrbsClient;
 import com.orbs.client.OrbsContract;
+import com.orbs.client.SendTransactionResponse;
 import com.orbs.cryptosdk.Address;
 import com.orbs.cryptosdk.CryptoSDK;
 import com.orbs.cryptosdk.ED25519Key;
@@ -67,16 +68,23 @@ class OrbsWallet {
         return publicAddress;
     }
 
-    void sendOrbs(String address, BigDecimal amount) throws Exception {
-        //TODO
+    void sendOrbs(String toAddress, BigDecimal amount) throws Exception {
+        SendTransactionResponse response = orbsContract.sendTransaction("transfer",
+                new Object[]{toAddress, amount.toPlainString()});
+        if (response == null) {
+            throw new Exception("transaction response is null");
+        }
+        if (response.transactionId == null || response.transactionId.isEmpty()) {
+            throw new Exception("transaction transactionId is null or empty");
+        }
     }
 
     BigDecimal getBalance() throws Exception {
-        String getBalance = orbsContract.call("getBalance", new Object[]{publicAddress});
+        String getBalance = orbsContract.call("getBalance", null);
         return BigDecimal.ZERO;
     }
 
     void fundAccount() throws Exception {
-        //TODO call init function on contract
+        String response = orbsContract.call("financeAccount", new Object[]{publicAddress});
     }
 }
