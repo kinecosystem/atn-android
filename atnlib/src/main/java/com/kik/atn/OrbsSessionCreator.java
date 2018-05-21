@@ -101,28 +101,28 @@ class OrbsSessionCreator {
     }
 
     private boolean fundAccount() {
-        if (!isFunded()) {
-            eventLogger.sendOrbsEvent(ONBOARD_ACCOUNT_NOT_FUNDED);
-            try {
-                orbsWallet.fundAccount();
-                eventLogger.sendOrbsEvent(ACCOUNT_FUNDING_SUCCEEDED);
+        try {
+            if (!isFunded()) {
+                eventLogger.sendOrbsEvent(ONBOARD_ACCOUNT_NOT_FUNDED);
+                try {
+                    orbsWallet.fundAccount();
+                    eventLogger.sendOrbsEvent(ACCOUNT_FUNDING_SUCCEEDED);
+                    return true;
+                } catch (Exception e) {
+                    eventLogger.sendOrbsErrorEvent(ACCOUNT_FUNDING_FAILED, e);
+                    return false;
+                }
+            } else {
                 return true;
-            } catch (Exception e) {
-                eventLogger.sendOrbsErrorEvent(ACCOUNT_FUNDING_FAILED, e);
-                return false;
             }
-        } else {
-            return true;
+        } catch (Exception e) {
+            eventLogger.sendOrbsErrorEvent(ONBOARD_IS_FUNDED_FAILED, e);
+            return false;
         }
     }
 
-    private boolean isFunded() {
-        try {
-            return orbsWallet.getBalance().compareTo(new BigDecimal("0.0")) > 0;
-        } catch (Exception e) {
-            eventLogger.sendErrorEvent(ONBOARD_IS_FUNDED_FAILED, e);
-            return false;
-        }
+    private boolean isFunded() throws Exception {
+        return orbsWallet.getBalance().compareTo(new BigDecimal("0.0")) > 0;
     }
 
     OrbsSender getOrbsSender() {
