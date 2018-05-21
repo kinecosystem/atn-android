@@ -3,6 +3,7 @@ package com.kik.atn;
 
 import com.orbs.client.OrbsClient;
 import com.orbs.client.OrbsContract;
+import com.orbs.client.OrbsHost;
 import com.orbs.client.SendTransactionResponse;
 import com.orbs.cryptosdk.Address;
 import com.orbs.cryptosdk.CryptoSDK;
@@ -14,7 +15,7 @@ class OrbsWallet {
 
     static final String KEY_ORBS_PUBLIC_ADDRESS = "key_orbs_public_address";
     static final String KEY_ORBS_PRIVATE_KEY = "key_orbs_private_key";
-    private static final String VIRTUAL_CHAIN_ID = "640ed3";
+    private static final String VIRTUAL_CHAIN_ID = "6b696e";
     private static final String NETWORK_ID_TESTNET = "T";
     private static final String CONTRACT_NAME = "kinatn";
     private final Store localStore;
@@ -24,6 +25,7 @@ class OrbsWallet {
     private OrbsClient orbsClient;
     private OrbsContract orbsContract;
     private boolean isLoaded;
+    private Address address;
 
     OrbsWallet(Store localStore, String orbsEndpoint) {
         this.localStore = localStore;
@@ -58,8 +60,9 @@ class OrbsWallet {
     }
 
     private void initOrbsApis(ED25519Key keyPair) throws Exception {
-        Address address = new Address(publicAddress, VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
-        orbsClient = new OrbsClient(orbsEndpoint, address, keyPair);
+        address = new Address(publicAddress, VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
+        OrbsHost host = new OrbsHost(false, orbsEndpoint, 80);
+        orbsClient = new OrbsClient(host, address, keyPair);
         orbsContract = new OrbsContract(orbsClient, CONTRACT_NAME);
         isLoaded = true;
     }
@@ -71,6 +74,10 @@ class OrbsWallet {
     void sendOrbs(String toAddress, BigDecimal amount) throws Exception {
         SendTransactionResponse response = orbsContract.sendTransaction("transfer",
                 new Object[]{toAddress, amount.toPlainString()});
+        handleTransactionResponse(response);
+    }
+
+    private void handleTransactionResponse(SendTransactionResponse response) throws Exception {
         if (response == null) {
             throw new Exception("transaction response is null");
         }
@@ -85,6 +92,8 @@ class OrbsWallet {
     }
 
     void fundAccount() throws Exception {
-        String response = orbsContract.call("financeAccount", new Object[]{publicAddress});
+
+        SendTransactionResponse response = orbsContract.sendTransaction("financeAccount", new Object[]{address.toString()});
+        handleTransactionResponse(response);
     }
 }
