@@ -1,6 +1,8 @@
 package com.kik.atn;
 
 
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 import com.orbs.client.OrbsClient;
 import com.orbs.client.OrbsContract;
 import com.orbs.client.OrbsHost;
@@ -18,11 +20,13 @@ class OrbsWallet {
     private static final String VIRTUAL_CHAIN_ID = "6b696e";
     private static final String NETWORK_ID_TESTNET = "T";
     private static final String CONTRACT_NAME = "kinatn";
+    private static final String METHOD_NAME_TRANSFER = "transfer";
+    private static final String METHOD_NAME_BALANCE = "getBalance";
+    private static final String METHOD_NAME_FUNDING = "financeAccount";
     private final Store localStore;
     private final String orbsEndpoint;
     private String publicAddress;
     private String privateKey;
-    private OrbsClient orbsClient;
     private OrbsContract orbsContract;
     private boolean isLoaded;
     private Address address;
@@ -62,7 +66,7 @@ class OrbsWallet {
     private void initOrbsApis(ED25519Key keyPair) throws Exception {
         address = new Address(publicAddress, VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
         OrbsHost host = new OrbsHost(false, orbsEndpoint, 80);
-        orbsClient = new OrbsClient(host, address, keyPair);
+        OrbsClient orbsClient = new OrbsClient(host, address, keyPair);
         orbsContract = new OrbsContract(orbsClient, CONTRACT_NAME);
         isLoaded = true;
     }
@@ -72,7 +76,7 @@ class OrbsWallet {
     }
 
     void sendOrbs(String toAddress, BigDecimal amount) throws Exception {
-        SendTransactionResponse response = orbsContract.sendTransaction("transfer",
+        SendTransactionResponse response = orbsContract.sendTransaction(METHOD_NAME_TRANSFER,
                 new Object[]{toAddress, amount.toPlainString()});
         handleTransactionResponse(response);
     }
@@ -87,13 +91,19 @@ class OrbsWallet {
     }
 
     BigDecimal getBalance() throws Exception {
-        String getBalance = orbsContract.call("getBalance", null);
-        return BigDecimal.ZERO;
+        String getBalance = orbsContract.call(METHOD_NAME_BALANCE, null);
+        Gson gson = new Gson();
+        BalanceResult balance = gson.fromJson(getBalance, BalanceResult.class);
+        return new BigDecimal(balance.result);
+    }
+
+    private class BalanceResult {
+        @SerializedName("result")
+        float result;
     }
 
     void fundAccount() throws Exception {
-
-        SendTransactionResponse response = orbsContract.sendTransaction("financeAccount", new Object[]{address.toString()});
+        SendTransactionResponse response = orbsContract.sendTransaction(METHOD_NAME_FUNDING, new Object[]{address.toString()});
         handleTransactionResponse(response);
     }
 }
