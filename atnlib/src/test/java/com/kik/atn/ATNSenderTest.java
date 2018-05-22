@@ -24,7 +24,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,8 +41,6 @@ public class ATNSenderTest {
     private KinAccount mockKinAccount;
     @Mock
     private EventLogger mockEventLogger;
-    @Mock
-    private ConfigurationProvider mockConfigProvider;
     private ATNSender sender;
 
 
@@ -51,10 +48,8 @@ public class ATNSenderTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        sender = new ATNSender(mockKinAccount, mockEventLogger, mockConfigProvider);
+        sender = new ATNSender(mockKinAccount, mockEventLogger);
         when(mockEventLogger.startDurationLogging()).thenCallRealMethod();
-        //by default mock enabled configuration
-        when(mockConfigProvider.getConfig(anyString())).thenReturn(new Config(true, ATN_ADDRESS));
         when(mockKinAccount.getPublicAddress()).thenReturn("GDYF6ZDSSLM32OKGOL6ZKA4JYSBFSHLSARUUPE4YDYNOHJ5WXSLMBDUV");
     }
 
@@ -63,7 +58,7 @@ public class ATNSenderTest {
         when(mockKinAccount.sendTransactionSync(anyString(), (BigDecimal) any()))
                 .thenReturn(dummyTransactionId);
 
-        sender.sendATN();
+        sender.sendATN(ATN_ADDRESS);
 
         verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, new BigDecimal("1"));
         verify(mockEventLogger).sendEvent("send_atn_started");
@@ -81,7 +76,7 @@ public class ATNSenderTest {
                     }
                 });
 
-        sender.sendATN();
+        sender.sendATN(ATN_ADDRESS);
 
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mockEventLogger).sendDurationEvent(eq("send_atn_succeeded"), argumentCaptor.capture());
@@ -95,7 +90,7 @@ public class ATNSenderTest {
         when(mockKinAccount.sendTransactionSync(anyString(), (BigDecimal) any()))
                 .thenThrow(expectedException);
 
-        sender.sendATN();
+        sender.sendATN(ATN_ADDRESS);
 
         verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, new BigDecimal("1"));
         verify(mockEventLogger).sendErrorEvent("send_atn_failed", expectedException);
@@ -109,19 +104,10 @@ public class ATNSenderTest {
         when(mockKinAccount.sendTransactionSync(anyString(), (BigDecimal) any()))
                 .thenThrow(expectedException);
 
-        sender.sendATN();
+        sender.sendATN(ATN_ADDRESS);
 
         verify(mockKinAccount).sendTransactionSync(ATN_ADDRESS, new BigDecimal("1"));
         verify(mockEventLogger).sendErrorEvent("send_atn_failed", expectedException);
     }
 
-    @Test
-    public void sendATN_Disabled_NoTransactionJustLog() throws Exception {
-        when(mockConfigProvider.getConfig(anyString())).thenReturn(new Config(false, ATN_ADDRESS));
-
-        sender.sendATN();
-
-        verify(mockKinAccount, only()).getPublicAddress();
-        verify(mockEventLogger, only()).log(anyString());
-    }
 }

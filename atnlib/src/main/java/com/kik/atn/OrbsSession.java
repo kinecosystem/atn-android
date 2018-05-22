@@ -19,7 +19,7 @@ import static com.kik.atn.Events.ONBOARD_LOAD_WALLET_SUCCEEDED;
 import static com.kik.atn.Events.ONBOARD_STARTED;
 import static com.kik.atn.Events.ONBOARD_SUCCEEDED;
 
-class OrbsSessionCreator {
+class OrbsSession {
 
     private final OrbsWallet orbsWallet;
     private final EventLogger eventLogger;
@@ -28,9 +28,11 @@ class OrbsSessionCreator {
     private final ConfigurationProvider configurationProvider;
     private OrbsSender orbsSender;
     private OrbsReceiver orbsReceiver;
+    private boolean isCreated;
+    private String publicAddress;
 
-    OrbsSessionCreator(OrbsWallet orbsWallet, EventLogger eventLogger, ATNServer atnServer, KinAccountCreator kinAccountCreator,
-                       ConfigurationProvider configurationProvider) {
+    OrbsSession(OrbsWallet orbsWallet, EventLogger eventLogger, ATNServer atnServer, KinAccountCreator kinAccountCreator,
+                ConfigurationProvider configurationProvider) {
         this.orbsWallet = orbsWallet;
         this.eventLogger = eventLogger;
         this.atnServer = atnServer;
@@ -39,15 +41,15 @@ class OrbsSessionCreator {
     }
 
     boolean create() {
-        String publicAddress = kinAccountCreator.getAccount().getPublicAddress();
+        publicAddress = kinAccountCreator.getAccount().getPublicAddress();
         if (isEnable(publicAddress)) {
             if (onboard()) {
-                orbsSender = new OrbsSender(orbsWallet, eventLogger, configurationProvider);
-                orbsReceiver = new OrbsReceiver(atnServer, eventLogger, configurationProvider, orbsWallet.getPublicAddress());
-                return true;
+                orbsSender = new OrbsSender(orbsWallet, eventLogger);
+                orbsReceiver = new OrbsReceiver(atnServer, eventLogger, orbsWallet.getPublicAddress());
+                isCreated = true;
             }
         }
-        return false;
+        return isCreated;
     }
 
     private boolean isEnable(String publicAddress) {
@@ -125,11 +127,19 @@ class OrbsSessionCreator {
         return orbsWallet.getBalance().compareTo(new BigDecimal("0.0")) > 0;
     }
 
-    OrbsSender getOrbsSender() {
-        return orbsSender;
+    boolean isCreated() {
+        return isCreated;
     }
 
-    OrbsReceiver getOrbsReceiver() {
-        return orbsReceiver;
+    void receiveOrbs() {
+        if (orbsReceiver != null) {
+            orbsReceiver.receiveOrbs();
+        }
+    }
+
+    void sendOrbs() {
+        if (orbsSender != null) {
+            orbsSender.sendOrbs(configurationProvider.getConfig(publicAddress).orbs().getServerAccountAddress());
+        }
     }
 }

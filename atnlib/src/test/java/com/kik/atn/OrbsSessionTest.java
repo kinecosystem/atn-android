@@ -18,19 +18,20 @@ import java.math.BigDecimal;
 
 import kin.core.KinAccount;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @org.robolectric.annotation.Config(manifest = org.robolectric.annotation.Config.NONE)
-public class OrbsSessionCreatorTest {
+public class OrbsSessionTest {
 
     private static final String ORBS_SERVER_ADDRESS = "c2739f7021f841b2cf9c23a4647b0729bf8b69f32551733c2046c82b437a89bc";
     private static final String ORBS_ACCOUNT_ADDRESS = "058ce08b42254e4f00f0f85622edfd4871799df6898ba440a94bc0f579ef986d";
@@ -53,12 +54,12 @@ public class OrbsSessionCreatorTest {
     private
     ConfigurationProvider mockConfigurationProvider;
 
-    private OrbsSessionCreator sessionCreator;
+    private OrbsSession sessionCreator;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        sessionCreator = new OrbsSessionCreator(mockOrbsWallet, mockEventLogger,
+        sessionCreator = new OrbsSession(mockOrbsWallet, mockEventLogger,
                 mockAtnServer, mockKinAccountCreator, mockConfigurationProvider);
 
         when(mockKinAccount.getPublicAddress()).thenReturn("GDYF6ZDSSLM32OKGOL6ZKA4JYSBFSHLSARUUPE4YDYNOHJ5WXSLMBDUV");
@@ -77,6 +78,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(false));
+        assertThat(sessionCreator.isCreated(), equalTo(false));
         verifyZeroInteractions(mockOrbsWallet, mockEventLogger, mockAtnServer);
     }
 
@@ -87,6 +89,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(false));
+        assertThat(sessionCreator.isCreated(), equalTo(false));
         verifyZeroInteractions(mockOrbsWallet, mockEventLogger, mockAtnServer);
     }
 
@@ -98,8 +101,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(true));
-        assertThat(sessionCreator.getOrbsReceiver(), notNullValue());
-        assertThat(sessionCreator.getOrbsSender(), notNullValue());
+        assertThat(sessionCreator.isCreated(), equalTo(true));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_STARTED);
@@ -122,8 +124,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(true));
-        assertThat(sessionCreator.getOrbsReceiver(), notNullValue());
-        assertThat(sessionCreator.getOrbsSender(), notNullValue());
+        assertThat(sessionCreator.isCreated(), equalTo(true));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
@@ -146,6 +147,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(true));
+        assertThat(sessionCreator.isCreated(), equalTo(true));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
@@ -154,6 +156,28 @@ public class OrbsSessionCreatorTest {
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
         verifyNoMoreInteractions(mockEventLogger);
+    }
+
+    @Test
+    public void createAndSendOrbs_AlreadyOnboarded_OrbsSent() throws Exception {
+        mockWalletCreated(true);
+        mockFundedAccount();
+
+        sessionCreator.create();
+        sessionCreator.sendOrbs();
+
+        verify(mockOrbsWallet).sendOrbs(ORBS_SERVER_ADDRESS, new BigDecimal(1));
+    }
+
+    @Test
+    public void createAndReceiveOrbs_AlreadyOnboarded_OrbsReceived() throws Exception {
+        mockWalletCreated(true);
+        mockFundedAccount();
+
+        sessionCreator.create();
+        sessionCreator.receiveOrbs();
+
+        verify(mockAtnServer).receiveOrbs(ORBS_ACCOUNT_ADDRESS);
     }
 
     @Test
@@ -166,6 +190,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(false));
+        assertThat(sessionCreator.isCreated(), equalTo(false));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
@@ -186,6 +211,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(false));
+        assertThat(sessionCreator.isCreated(), equalTo(false));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_STARTED);
@@ -210,6 +236,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(false));
+        assertThat(sessionCreator.isCreated(), equalTo(false));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_STARTED);
@@ -233,6 +260,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(false));
+        assertThat(sessionCreator.isCreated(), equalTo(false));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);
@@ -256,6 +284,7 @@ public class OrbsSessionCreatorTest {
         boolean result = sessionCreator.create();
 
         assertThat(result, is(false));
+        assertThat(sessionCreator.isCreated(), equalTo(false));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_STARTED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_STARTED);

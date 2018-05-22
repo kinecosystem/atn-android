@@ -3,7 +3,7 @@ package com.kik.atn;
 
 import kin.core.KinAccount;
 
-class ATNSessionCreator {
+class ATNSession {
 
     private final EventLogger eventLogger;
     private final ATNServer atnServer;
@@ -11,10 +11,12 @@ class ATNSessionCreator {
     private final ConfigurationProvider configurationProvider;
     private final ATNAccountOnBoarding accountOnBoarding;
     private ATNSender atnSender;
-    private ATNReceiver afnReceiver;
+    private ATNReceiver atnReceiver;
+    private boolean isCreated;
+    private String publicAddress;
 
-    ATNSessionCreator(EventLogger eventLogger, ATNServer atnServer, KinAccountCreator kinAccountCreator,
-                      ConfigurationProvider configurationProvider, ATNAccountOnBoarding accountOnBoarding) {
+    ATNSession(EventLogger eventLogger, ATNServer atnServer, KinAccountCreator kinAccountCreator,
+               ConfigurationProvider configurationProvider, ATNAccountOnBoarding accountOnBoarding) {
         this.eventLogger = eventLogger;
         this.atnServer = atnServer;
         this.kinAccountCreator = kinAccountCreator;
@@ -25,22 +27,30 @@ class ATNSessionCreator {
     boolean create() {
         KinAccount account = kinAccountCreator.getAccount();
         if (account != null) {
-            String publicAddress = account.getPublicAddress();
+            publicAddress = account.getPublicAddress();
             eventLogger.setPublicAddress(publicAddress);
             if (configurationProvider.getConfig(publicAddress).isEnabled() && accountOnBoarding.onBoard(account)) {
-                atnSender = new ATNSender(account, eventLogger, configurationProvider);
-                afnReceiver = new ATNReceiver(atnServer, eventLogger, configurationProvider, publicAddress);
-                return true;
+                atnSender = new ATNSender(account, eventLogger);
+                atnReceiver = new ATNReceiver(atnServer, eventLogger, publicAddress);
+                isCreated = true;
             }
         }
-        return false;
+        return isCreated;
     }
 
-    ATNSender getATNSender() {
-        return atnSender;
+    boolean isCreated() {
+        return isCreated;
     }
 
-    ATNReceiver getATNReceiver() {
-        return afnReceiver;
+    void receiveATN() {
+        if (atnReceiver != null) {
+            atnReceiver.receiveATN();
+        }
+    }
+
+    void sendATN() {
+        if (atnSender != null) {
+            atnSender.sendATN(configurationProvider.getConfig(publicAddress).getAtnAddress());
+        }
     }
 }

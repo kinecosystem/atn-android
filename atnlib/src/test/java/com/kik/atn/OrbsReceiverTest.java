@@ -7,9 +7,7 @@ import org.mockito.MockitoAnnotations;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class OrbsReceiverTest {
@@ -26,7 +24,7 @@ public class OrbsReceiverTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        receiver = new OrbsReceiver(mockAtnServer, mockEventLogger, mockConfigProvider, "c2739f7021f841b2cf9c23a4647b0729bf8b69f32551733c2046c82b437a89bc");
+        receiver = new OrbsReceiver(mockAtnServer, mockEventLogger, "c2739f7021f841b2cf9c23a4647b0729bf8b69f32551733c2046c82b437a89bc");
         //by default mock enabled configuration
         when(mockConfigProvider.getConfig(anyString())).thenReturn(
                 new Config(false, "dummyaddress", 1, new Config.Orbs(true, 1, "")));
@@ -53,14 +51,4 @@ public class OrbsReceiverTest {
         verify(mockEventLogger).sendOrbsErrorEvent("claim_orbs_failed", expectedException);
     }
 
-
-    @Test
-    public void receiveATN_Disabled_NoTransactionJustLog() throws Exception {
-        when(mockConfigProvider.getConfig(anyString())).thenReturn(new Config(true, "someaddress", 1, new Config.Orbs(false, 1, "")));
-
-        receiver.receiveOrbs();
-
-        verifyZeroInteractions(mockAtnServer);
-        verify(mockEventLogger, only()).log(anyString());
-    }
 }

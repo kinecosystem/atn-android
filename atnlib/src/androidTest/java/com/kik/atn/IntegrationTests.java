@@ -21,6 +21,8 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 import static java.lang.Thread.sleep;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -121,8 +123,8 @@ public class IntegrationTests {
         sleep(1010);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-
-        verify(mockKinAccount, timeout(1000).times(3)).getPublicAddress();
+        // 2 calls - atnHandler init and atnSessionCreator
+        verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
         verify(mockKinAccount, timeout(1000).times(1)).getBalanceSync();
         verify(mockKinAccount, timeout(1000).times(1)).sendTransactionSync(anyString(), (BigDecimal) any());
         verifyNoMoreInteractions(mockKinAccount);
@@ -165,11 +167,15 @@ public class IntegrationTests {
         mockConfiguration(false, false);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
+        sleep(1010);
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
+        sleep(1010);
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
+
+        //single call - atnHandler init
+        verify(mockKinAccount, timeout(1010)).getPublicAddress();
+        //single call - getting configuration
+        assertThat(mockWebServer.getRequestCount(), equalTo(1));
     }
 
     @Test
