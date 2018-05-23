@@ -24,14 +24,14 @@ class OrbsWallet {
     private static final String METHOD_NAME_BALANCE = "getBalance";
     private static final String METHOD_NAME_FUNDING = "financeAccount";
     private final Store localStore;
-    private final String orbsEndpoint;
+    private final OrbsNodeUrlProvider orbsEndpoint;
     private String publicAddress;
     private String privateKey;
     private OrbsContract orbsContract;
     private boolean isLoaded;
     private Address address;
 
-    OrbsWallet(Store localStore, String orbsEndpoint) {
+    OrbsWallet(Store localStore, OrbsNodeUrlProvider orbsEndpoint) {
         this.localStore = localStore;
         this.orbsEndpoint = orbsEndpoint;
     }
@@ -65,7 +65,7 @@ class OrbsWallet {
 
     private void initOrbsApis(ED25519Key keyPair) throws Exception {
         address = new Address(publicAddress, VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
-        OrbsHost host = new OrbsHost(false, orbsEndpoint, 80);
+        OrbsHost host = new OrbsHost(orbsEndpoint.isHttps(), orbsEndpoint.getHost(), orbsEndpoint.getPort());
         OrbsClient orbsClient = new OrbsClient(host, address, keyPair);
         orbsContract = new OrbsContract(orbsClient, CONTRACT_NAME);
         isLoaded = true;
