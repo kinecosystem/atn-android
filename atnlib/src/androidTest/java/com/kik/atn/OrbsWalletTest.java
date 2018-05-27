@@ -1,5 +1,7 @@
 package com.kik.atn;
 
+import com.orbs.cryptosdk.Address;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -20,7 +22,7 @@ public class OrbsWalletTest {
 
     private final static OrbsNodeUrlProvider ORBS_URL = new OrbsNodeUrlProvider();
     private final static String PRIVATE_KEY = "5756a055b8f2aa7247cddaf9a441f8103a95ffe60e9f43d7fc29c7eecd8160c0";
-    private final static String PUBLIC_ADDRESS = "18084d8948e4fa9283cc96cb72012b5dfa91cdccf52f420e7ec185ff2b4a2723";
+    private final static String PUBLIC_KEY = "18084d8948e4fa9283cc96cb72012b5dfa91cdccf52f420e7ec185ff2b4a2723";
     private FakeStore store;
     private MockWebServer mockWebServer;
     private OrbsNodeUrlProvider mockNodeUrlProvider;
@@ -46,7 +48,7 @@ public class OrbsWalletTest {
     private void mockStoreWithLoadedWallet() {
         store = new FakeStore();
         store.saveString(OrbsWallet.KEY_ORBS_PRIVATE_KEY, PRIVATE_KEY);
-        store.saveString(OrbsWallet.KEY_ORBS_PUBLIC_ADDRESS, PUBLIC_ADDRESS);
+        store.saveString(OrbsWallet.KEY_ORBS_PUBLIC_KEY, PUBLIC_KEY);
     }
 
     @Test
@@ -67,7 +69,8 @@ public class OrbsWalletTest {
         wallet.loadWallet();
 
         assertThat(wallet.isWalletCreated(), is(true));
-        assertThat(wallet.getPublicAddress(), equalTo(PUBLIC_ADDRESS));
+        Address address = new Address(PUBLIC_KEY, OrbsWallet.VIRTUAL_CHAIN_ID, OrbsWallet.NETWORK_ID_TESTNET);
+        assertThat(wallet.getPublicAddress(), equalTo(address.toString()));
     }
 
     @Test(expected = Exception.class)
@@ -75,7 +78,7 @@ public class OrbsWalletTest {
         store = new FakeStore();
 
         store.saveString(OrbsWallet.KEY_ORBS_PRIVATE_KEY, PRIVATE_KEY);
-        store.saveString(OrbsWallet.KEY_ORBS_PUBLIC_ADDRESS, "invalid public key format");
+        store.saveString(OrbsWallet.KEY_ORBS_PUBLIC_KEY, "invalid public key format");
         OrbsWallet wallet = new OrbsWallet(store, ORBS_URL);
         wallet.loadWallet();
 
@@ -96,7 +99,7 @@ public class OrbsWalletTest {
     @Test(expected = IllegalStateException.class)
     public void loadWallet_OnlyPublicAddress_Failure() throws Exception {
         store = new FakeStore();
-        store.saveString(OrbsWallet.KEY_ORBS_PUBLIC_ADDRESS, PUBLIC_ADDRESS);
+        store.saveString(OrbsWallet.KEY_ORBS_PUBLIC_KEY, PUBLIC_KEY);
 
         OrbsWallet wallet = new OrbsWallet(store, ORBS_URL);
         wallet.loadWallet();

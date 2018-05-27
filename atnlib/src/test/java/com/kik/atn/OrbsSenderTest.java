@@ -33,23 +33,27 @@ public class OrbsSenderTest {
     }
 
     @Test
-    public void sendorbs_Success() throws Exception {
+    public void sendOrbs_Success() throws Exception {
+        String expectedTxId = "tx_id";
+        when(mockOrbsWallet.sendOrbs(anyString(), (BigDecimal) any())).thenReturn(expectedTxId);
 
         sender.sendOrbs(ORBS_ADDRESS);
 
         verify(mockOrbsWallet).sendOrbs(ORBS_ADDRESS, new BigDecimal("1"));
-        verify(mockEventLogger).sendOrbsEvent("send_orbs_started");
+        verify(mockEventLogger).sendOrbsEvent(Events.SEND_ORBS_STARTED);
+        verify(mockEventLogger).sendOrbsEvent(Events.SEND_ORBS_SUCCEEDED, expectedTxId);
     }
 
     @Test
-    public void sendorbs_SendTransactionFailure_ReportFailure() throws Exception {
+    public void sendOrbs_SendTransactionFailure_ReportFailure() throws Exception {
         Exception expectedException = new Exception("some error");
         doThrow(expectedException).when(mockOrbsWallet).sendOrbs(anyString(), (BigDecimal) any());
 
         sender.sendOrbs(ORBS_ADDRESS);
 
+        verify(mockEventLogger).sendOrbsEvent(Events.SEND_ORBS_STARTED);
         verify(mockOrbsWallet).sendOrbs(ORBS_ADDRESS, new BigDecimal("1"));
-        verify(mockEventLogger).sendOrbsErrorEvent("send_orbs_failed", expectedException);
+        verify(mockEventLogger).sendOrbsErrorEvent(Events.SEND_ORBS_FAILED, expectedException);
     }
 
 }

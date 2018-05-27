@@ -97,6 +97,8 @@ public class OrbsSessionTest {
     public void create_WalletNotCreatedAndNotFunded_OnBoardSuccess() throws Exception {
         mockWalletCreated(false);
         mockNotFundedAccount();
+        String expectedTxId = "tx_id";
+        when(mockOrbsWallet.fundAccount()).thenReturn(expectedTxId);
 
         boolean result = sessionCreator.create();
 
@@ -110,8 +112,7 @@ public class OrbsSessionTest {
         inOrder.verify(mockOrbsWallet, times(0)).loadWallet();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_CREATE_WALLET_SUCCEEDED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
-        inOrder.verify(mockOrbsWallet).fundAccount();
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ACCOUNT_FUNDING_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ACCOUNT_FUNDING_SUCCEEDED, expectedTxId);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
         verifyNoMoreInteractions(mockEventLogger);
     }
@@ -121,8 +122,10 @@ public class OrbsSessionTest {
         mockWalletCreated(true);
         mockNotFundedAccount();
 
-        boolean result = sessionCreator.create();
+        String expectedTxId = "tx_id";
+        when(mockOrbsWallet.fundAccount()).thenReturn(expectedTxId);
 
+        boolean result = sessionCreator.create();
         assertThat(result, is(true));
         assertThat(sessionCreator.isCreated(), equalTo(true));
         InOrder inOrder = Mockito.inOrder(mockEventLogger, mockAtnServer, mockOrbsWallet);
@@ -133,8 +136,7 @@ public class OrbsSessionTest {
         inOrder.verify(mockOrbsWallet, times(0)).createWallet();
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_LOAD_WALLET_SUCCEEDED);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_ACCOUNT_NOT_FUNDED);
-        inOrder.verify(mockOrbsWallet).fundAccount();
-        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ACCOUNT_FUNDING_SUCCEEDED);
+        inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ACCOUNT_FUNDING_SUCCEEDED, expectedTxId);
         inOrder.verify(mockEventLogger).sendOrbsEvent(Events.ONBOARD_SUCCEEDED);
         verifyNoMoreInteractions(mockEventLogger);
     }

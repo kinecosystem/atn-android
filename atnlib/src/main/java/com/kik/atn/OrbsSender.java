@@ -3,7 +3,12 @@ package com.kik.atn;
 
 import java.math.BigDecimal;
 
+import static com.kik.atn.Events.SEND_ORBS_FAILED;
+import static com.kik.atn.Events.SEND_ORBS_STARTED;
+import static com.kik.atn.Events.SEND_ORBS_SUCCEEDED;
+
 class OrbsSender {
+
 
     private final OrbsWallet orbsWallet;
     private final EventLogger eventLogger;
@@ -14,12 +19,12 @@ class OrbsSender {
     }
 
     void sendOrbs(String targetAddress) {
-        eventLogger.sendOrbsEvent("send_orbs_started");
+        eventLogger.sendOrbsEvent(SEND_ORBS_STARTED);
         try {
-            orbsWallet.sendOrbs(targetAddress, BigDecimal.ONE);
-            eventLogger.sendOrbsEvent("send_orbs_succeeded");
+            String txId = orbsWallet.sendOrbs(targetAddress, BigDecimal.ONE);
+            eventLogger.sendOrbsEvent(SEND_ORBS_SUCCEEDED, txId);
         } catch (Exception ex) {
-            eventLogger.sendOrbsErrorEvent("send_orbs_failed", ex);
+            eventLogger.sendOrbsErrorEvent(SEND_ORBS_FAILED, ex);
         }
     }
 }

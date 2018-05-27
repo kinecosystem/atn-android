@@ -107,8 +107,8 @@ class OrbsSession {
             if (!isFunded()) {
                 eventLogger.sendOrbsEvent(ONBOARD_ACCOUNT_NOT_FUNDED);
                 try {
-                    orbsWallet.fundAccount();
-                    eventLogger.sendOrbsEvent(ACCOUNT_FUNDING_SUCCEEDED);
+                    String txId = orbsWallet.fundAccount();
+                    eventLogger.sendOrbsEvent(ACCOUNT_FUNDING_SUCCEEDED, txId);
                     return true;
                 } catch (Exception e) {
                     eventLogger.sendOrbsErrorEvent(ACCOUNT_FUNDING_FAILED, e);

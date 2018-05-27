@@ -22,6 +22,7 @@ class Event {
     private final static String FIELD_LIB_VER = "lib_ver";
     private final static String FIELD_DEVICE_ID = "device_id";
     private final static String FIELD_BLOCKCHAIN = "bc";
+    private static final String FIELD_TRANSACTION_ID = "tx_id";
     private final static SimpleDateFormat dateFormat;
 
     static {
@@ -57,6 +58,11 @@ class Event {
         this.payload.put(FIELD_LIB_VER, BuildConfig.VERSION_NAME);
         this.payload.put(FIELD_BLOCKCHAIN, blockchain);
         this.payload.put(FIELD_DEVICE_ID, deviceId);
+    }
+
+    Event(String name, String type, String publicAddress, String deviceId, String blockchain, String txId) {
+        this(name, type, publicAddress, deviceId, blockchain);
+        this.payload.put(FIELD_TRANSACTION_ID, txId);
     }
 
     Event addField(String key, Object value) {

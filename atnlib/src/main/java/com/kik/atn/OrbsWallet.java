@@ -15,10 +15,10 @@ import java.math.BigDecimal;
 
 class OrbsWallet {
 
-    static final String KEY_ORBS_PUBLIC_ADDRESS = "key_orbs_public_address";
+    static final String KEY_ORBS_PUBLIC_KEY = "key_orbs_public_address";
     static final String KEY_ORBS_PRIVATE_KEY = "key_orbs_private_key";
-    private static final String VIRTUAL_CHAIN_ID = "6b696e";
-    private static final String NETWORK_ID_TESTNET = "T";
+    static final String VIRTUAL_CHAIN_ID = "6b696e";
+    static final String NETWORK_ID_TESTNET = "T";
     private static final String CONTRACT_NAME = "kinatn";
     private static final String METHOD_NAME_TRANSFER = "transfer";
     private static final String METHOD_NAME_BALANCE = "getBalance";
@@ -26,10 +26,8 @@ class OrbsWallet {
     private final Store localStore;
     private final OrbsNodeUrlProvider orbsEndpoint;
     private String publicAddress;
-    private String privateKey;
     private OrbsContract orbsContract;
     private boolean isLoaded;
-    private Address address;
 
     OrbsWallet(Store localStore, OrbsNodeUrlProvider orbsEndpoint) {
         this.localStore = localStore;
@@ -38,33 +36,34 @@ class OrbsWallet {
 
     boolean isWalletCreated() {
         return isLoaded ||
-                (localStore.getString(KEY_ORBS_PUBLIC_ADDRESS) != null && localStore.getString(KEY_ORBS_PRIVATE_KEY) != null);
+                (localStore.getString(KEY_ORBS_PUBLIC_KEY) != null && localStore.getString(KEY_ORBS_PRIVATE_KEY) != null);
     }
 
     void createWallet() throws Exception {
         CryptoSDK.initialize();
         ED25519Key keyPair = new ED25519Key();
-        publicAddress = keyPair.getPublicKey();
-        privateKey = keyPair.getPrivateKeyUnsafe();
-        localStore.saveString(KEY_ORBS_PUBLIC_ADDRESS, publicAddress);
+        String publicKey = keyPair.getPublicKey();
+        String privateKey = keyPair.getPrivateKeyUnsafe();
+        localStore.saveString(KEY_ORBS_PUBLIC_KEY, publicKey);
         localStore.saveString(KEY_ORBS_PRIVATE_KEY, privateKey);
         initOrbsApis(keyPair);
     }
 
     void loadWallet() throws Exception {
         CryptoSDK.initialize();
-        publicAddress = localStore.getString(KEY_ORBS_PUBLIC_ADDRESS);
-        privateKey = localStore.getString(KEY_ORBS_PRIVATE_KEY);
-        if (publicAddress != null && privateKey != null) {
-            ED25519Key keyPair = new ED25519Key(publicAddress, privateKey);
+        String publicKey = localStore.getString(KEY_ORBS_PUBLIC_KEY);
+        String privateKey = localStore.getString(KEY_ORBS_PRIVATE_KEY);
+        if (publicKey != null && privateKey != null) {
+            ED25519Key keyPair = new ED25519Key(publicKey, privateKey);
             initOrbsApis(keyPair);
         } else {
-            throw new IllegalStateException("Error loading wallet, publicAddress = " + publicAddress + ", privateKey = " + privateKey);
+            throw new IllegalStateException("Error loading wallet, publicKey = " + publicKey + ", privateKey = " + privateKey);
         }
     }
 
     private void initOrbsApis(ED25519Key keyPair) throws Exception {
-        address = new Address(publicAddress, VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
+        Address address = new Address(keyPair.getPublicKey(), VIRTUAL_CHAIN_ID, NETWORK_ID_TESTNET);
+        publicAddress = address.toString();
         OrbsHost host = new OrbsHost(orbsEndpoint.isHttps(), orbsEndpoint.getHost(), orbsEndpoint.getPort());
         OrbsClient orbsClient = new OrbsClient(host, address, keyPair);
         orbsContract = new OrbsContract(orbsClient, CONTRACT_NAME);
@@ -75,19 +74,20 @@ class OrbsWallet {
         return publicAddress;
     }
 
-    void sendOrbs(String toAddress, BigDecimal amount) throws Exception {
+    String sendOrbs(String toAddress, BigDecimal amount) throws Exception {
         SendTransactionResponse response = orbsContract.sendTransaction(METHOD_NAME_TRANSFER,
                 new Object[]{toAddress, amount.toPlainString()});
-        handleTransactionResponse(response);
+        return extractTransactionId(response);
     }
 
-    private void handleTransactionResponse(SendTransactionResponse response) throws Exception {
+    private String extractTransactionId(SendTransactionResponse response) throws Exception {
         if (response == null) {
             throw new Exception("transaction response is null");
         }
         if (response.transactionId == null || response.transactionId.isEmpty()) {
             throw new Exception("transaction transactionId is null or empty");
         }
+        return response.transactionId;
     }
 
     BigDecimal getBalance() throws Exception {
@@ -102,8 +102,8 @@ class OrbsWallet {
         float result;
     }
 
-    void fundAccount() throws Exception {
-        SendTransactionResponse response = orbsContract.sendTransaction(METHOD_NAME_FUNDING, new Object[]{address.toString()});
-        handleTransactionResponse(response);
+    String fundAccount() throws Exception {
+        SendTransactionResponse response = orbsContract.sendTransaction(METHOD_NAME_FUNDING, new Object[]{publicAddress});
+        return extractTransactionId(response);
     }
 }

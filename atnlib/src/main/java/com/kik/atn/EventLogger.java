@@ -39,6 +39,11 @@ class EventLogger {
         sendEvent(event);
     }
 
+    void sendOrbsEvent(String name, String txId) {
+        Event event = new Event(name, Event.TYPE_EVENT, orbsPublicAddress, deviceId, Event.BLOCKCHAIN_ORBS, txId);
+        sendEvent(event);
+    }
+
     DurationLogger startDurationLogging() {
         return new DurationLogger();
     }
@@ -80,7 +85,7 @@ class EventLogger {
         androidLogger.log(msg);
     }
 
-    public void setOrbsPublicAddress(String orbsPublicAddress) {
+    void setOrbsPublicAddress(String orbsPublicAddress) {
         this.orbsPublicAddress = orbsPublicAddress;
     }
 

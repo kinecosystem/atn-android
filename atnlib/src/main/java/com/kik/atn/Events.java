@@ -18,4 +18,7 @@ final class Events {
     static final String ONBOARD_ACCOUNT_NOT_FUNDED = "onboard_account_not_funded";
     static final String ACCOUNT_FUNDING_SUCCEEDED = "account_funding_succeeded";
     static final String ACCOUNT_FUNDING_FAILED = "account_funding_failed";
+    static final String SEND_ORBS_STARTED = "send_orbs_started";
+    static final String SEND_ORBS_SUCCEEDED = "send_orbs_succeeded";
+    static final String SEND_ORBS_FAILED = "send_orbs_failed";
 }
