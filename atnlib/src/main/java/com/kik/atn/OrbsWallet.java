@@ -76,7 +76,7 @@ class OrbsWallet {
 
     String sendOrbs(String toAddress, BigDecimal amount) throws Exception {
         SendTransactionResponse response = orbsContract.sendTransaction(METHOD_NAME_TRANSFER,
-                new Object[]{toAddress, amount.toPlainString()});
+                new Object[]{toAddress, amount.longValue()});
         return extractTransactionId(response);
     }
 

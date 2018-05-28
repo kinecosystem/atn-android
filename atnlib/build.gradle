@@ -30,7 +30,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation ('com.orbs.sdk:crypto-sdk:0.0.9'){
+    implementation ('com.orbs.sdk:crypto-sdk:0.0.10'){
         exclude group: 'com.android.support'
         exclude module: 'appcompat-v7'
     }
