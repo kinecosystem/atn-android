@@ -69,7 +69,7 @@ public class OrbsWalletTest {
         wallet.loadWallet();
 
         assertThat(wallet.isWalletCreated(), is(true));
-        Address address = new Address(PUBLIC_KEY, OrbsWallet.VIRTUAL_CHAIN_ID, OrbsWallet.NETWORK_ID_TESTNET);
+        Address address = new Address(PUBLIC_KEY, OrbsWallet.VIRTUAL_CHAIN_ID, OrbsWallet.NETWORK_ID);
         assertThat(wallet.getPublicAddress(), equalTo(address.toString()));
     }
 

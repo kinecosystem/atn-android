@@ -18,8 +18,9 @@ class OrbsWallet {
     static final String KEY_ORBS_PUBLIC_KEY = "key_orbs_public_address";
     static final String KEY_ORBS_PRIVATE_KEY = "key_orbs_private_key";
     static final String VIRTUAL_CHAIN_ID = "6b696e";
-    static final String NETWORK_ID_TESTNET = "T";
-    static final String NETWORK_ID_PROD = "M";
+    private static final String NETWORK_ID_TESTNET = "T";
+    private static final String NETWORK_ID_PROD = "M";
+    static final String NETWORK_ID = NETWORK_ID_PROD;
     private static final String CONTRACT_NAME = "kinatn";
     private static final String METHOD_NAME_TRANSFER = "transfer";
     private static final String METHOD_NAME_BALANCE = "getBalance";
@@ -63,7 +64,7 @@ class OrbsWallet {
     }
 
     private void initOrbsApis(ED25519Key keyPair) throws Exception {
-        Address address = new Address(keyPair.getPublicKey(), VIRTUAL_CHAIN_ID, NETWORK_ID_PROD);
+        Address address = new Address(keyPair.getPublicKey(), VIRTUAL_CHAIN_ID, NETWORK_ID);
         publicAddress = address.toString();
         OrbsHost host = new OrbsHost(orbsEndpoint.isHttps(), orbsEndpoint.getHost(), orbsEndpoint.getPort());
         OrbsClient orbsClient = new OrbsClient(host, address, keyPair);
