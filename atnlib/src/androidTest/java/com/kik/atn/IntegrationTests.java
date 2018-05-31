@@ -21,6 +21,8 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 import static java.lang.Thread.sleep;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -61,7 +63,7 @@ public class IntegrationTests {
     @Test
     public void init_WithOnboarding() throws Exception {
         //configuration
-        mockEnabledConfiguration();
+        mockConfiguration(true, false);
         //not onboarded yet
         doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
         //create account
@@ -69,13 +71,40 @@ public class IntegrationTests {
         //fund with ATN
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
         //for send transaction request
-        mockEnabledConfiguration();
+        mockConfiguration(true, false);
 
+        //will trigger onboarding
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         //should be dropped by rate limiter
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         sleep(1010);
+        //will trigger ATN sending
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
+        verify(mockKinAccount, timeout(1000).times(1))
+                .sendTransactionSync(eq("GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU")
+                        , eq(new BigDecimal(1.0)));
+    }
+
+    @Test
+    public void init_WithOrbsOnboarding() throws Exception {
+        //configuration
+        mockConfiguration(true, false);
+        //not onboarded yet
+        doThrow(new AccountNotFoundException("")).when(mockKinAccount).getBalanceSync();
+        //create account
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        //fund with ATN
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        //for send transaction request
+        mockConfiguration(true, true);
+
+        //will trigger onboarding for both ATN and ORBS
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        //should be dropped by rate limiter
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        sleep(1010);
+        //will trigger sending ATN + Orbs
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
 
         verify(mockKinAccount, timeout(1000).times(1))
@@ -86,7 +115,7 @@ public class IntegrationTests {
     @Test
     public void init_AlreadyOnboarded() throws Exception {
         mockAlreadyOnBoarded();
-        mockEnabledConfiguration();
+        mockConfiguration(true, false);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         //should be dropped by rate limiter
@@ -94,7 +123,7 @@ public class IntegrationTests {
         sleep(1010);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-
+        // 2 calls - atnHandler init and atnSessionCreator
         verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
         verify(mockKinAccount, timeout(1000).times(1)).getBalanceSync();
         verify(mockKinAccount, timeout(1000).times(1)).sendTransactionSync(anyString(), (BigDecimal) any());
@@ -103,7 +132,7 @@ public class IntegrationTests {
 
     private void mockAlreadyOnBoarded() throws OperationFailedException {
         //configuration
-        mockEnabledConfiguration();
+        mockConfiguration(true, false);
         when(mockKinAccount.getBalanceSync()).thenReturn(new Balance() {
             @Override
             public BigDecimal value() {
@@ -117,12 +146,17 @@ public class IntegrationTests {
         });
     }
 
-    private void mockEnabledConfiguration() {
+    private void mockConfiguration(boolean atnEnabled, boolean orbsEnabled) {
         mockWebServer.enqueue(new MockResponse()
                 .setBody("{\n" +
-                        "     \"enabled\" : true,\n" +
+                        (atnEnabled ? "     \"enabled\" : true,\n" : "     \"enabled\" : false,\n") +
                         "     \"transaction_lapse\" : 1,\n" +
-                        "     \"target_wallet_address\": \"GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU\"\n" +
+                        "     \"target_wallet_address\": \"GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU\"\n," +
+                        "\"orbs\": {\n" +
+                        (orbsEnabled ? "     \"enabled\" : true,\n" : "     \"enabled\" : false,\n") +
+                        "  \"transaction_lapse\": 5,\n" +
+                        "  \"target_wallet_address\": \"orbs_address\" \n" +
+                        "}" +
                         "}")
                 .setResponseCode(200));
     }
@@ -130,19 +164,18 @@ public class IntegrationTests {
     @Test
     public void init_NotEnabled() throws Exception {
         //configuration
-        mockWebServer.enqueue(new MockResponse()
-                .setBody("{\n" +
-                        "     \"enabled\" : false,\n" +
-                        "     \"target_wallet_address\": \"GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU\"\n" +
-                        "}")
-                .setResponseCode(200));
+        mockConfiguration(false, false);
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
+        sleep(1010);
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
+        sleep(1010);
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
-        verify(mockKinAccount, timeout(1000).only()).getPublicAddress();
+
+        //single call - atnHandler init
+        verify(mockKinAccount, timeout(1010)).getPublicAddress();
+        //single call - getting configuration
+        assertThat(mockWebServer.getRequestCount(), equalTo(1));
     }
 
     @Test
@@ -175,7 +208,7 @@ public class IntegrationTests {
         atn = new ATN(modulesProvider);
 
         mockAlreadyOnBoarded();
-        mockEnabledConfiguration(); //for send transaction request
+        mockConfiguration(true, false); //for send transaction request
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         //should be dropped by rate limiter
@@ -202,7 +235,7 @@ public class IntegrationTests {
         atn = new ATN(modulesProvider);
 
         mockAlreadyOnBoarded();
-        mockEnabledConfiguration(); //for send transaction request
+        mockConfiguration(true, false); //for send transaction request
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         sleep(1010);
@@ -225,14 +258,7 @@ public class IntegrationTests {
                 mockATNServer);
 
         atn = new ATN(modulesProvider);
-        //Mock onboarding with rate limit value
-        mockWebServer.enqueue(new MockResponse()
-                .setBody("{\n" +
-                        "     \"enabled\" : true,\n" +
-                        "     \"target_wallet_address\": \"GBNU4TLYIQOQBM3PT32Z3CCYSMI6CDK7FXQR6R5DYB52GUPXES2S6XTU\",\n" +
-                        "     \"transaction_lapse\": 1\n" +
-                        "}")
-                .setResponseCode(200));
+        mockConfiguration(true, false);
         when(mockKinAccount.getBalanceSync()).thenReturn(new Balance() {
             @Override
             public BigDecimal value() {
@@ -245,7 +271,7 @@ public class IntegrationTests {
             }
         });
 
-        mockEnabledConfiguration(); //for send transaction request
+        mockConfiguration(true, false); //for send transaction request
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         sleep(1010);

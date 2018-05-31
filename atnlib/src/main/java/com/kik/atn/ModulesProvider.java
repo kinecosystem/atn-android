@@ -11,6 +11,7 @@ abstract class ModulesProvider {
     protected ConfigurationProvider configurationProvider;
     protected ATNAccountOnBoarding onboarding;
     protected KinAccountCreator kinAccountCreator;
+    protected OrbsWallet orbsWallet;
 
     ModulesProvider(Context context) {
         inject(context);
@@ -40,5 +41,9 @@ abstract class ModulesProvider {
 
     ATNAccountOnBoarding accountOnboarding() {
         return onboarding;
+    }
+
+    public OrbsWallet getOrbsWallet() {
+        return orbsWallet;
     }
 }

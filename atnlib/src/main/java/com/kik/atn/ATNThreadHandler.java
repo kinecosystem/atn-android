@@ -3,27 +3,31 @@ package com.kik.atn;
 
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
+
+import kin.core.KinAccount;
 
 class ATNThreadHandler extends HandlerThread {
 
     private final EventLogger eventLogger;
-    private final ATNSessionCreator sessionCreator;
-    private final ConfigurationProvider configurationProvider;
-    private volatile boolean isBusy;
-    private Handler handler;
-    private Dispatcher dispatcher;
-    private boolean sessionCreated = false;
+    private final ATNSession sessionCreator;
+    private final OrbsSession orbsSession;
+    private final ModulesProvider modulesProvider;
+    private ATNHandler handler;
+    private Dispatcher dispatcher, orbsDispatcher;
 
     ATNThreadHandler(ModulesProvider modulesProvider) {
         super("ATNThreadHandler");
         this.eventLogger = modulesProvider.eventLogger();
-        sessionCreator = new ATNSessionCreator(modulesProvider.eventLogger(),
+        sessionCreator = new ATNSession(modulesProvider.eventLogger(),
                 modulesProvider.atnServer(),
                 modulesProvider.kinAccountCreator(),
                 modulesProvider.configurationProvider(),
                 modulesProvider.accountOnboarding());
+        orbsSession = new OrbsSession(modulesProvider.getOrbsWallet(),
+                modulesProvider.eventLogger(),
+                modulesProvider.atnServer(),
+                modulesProvider.kinAccountCreator(),
+                modulesProvider.configurationProvider());
 
         setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
@@ -31,60 +35,42 @@ class ATNThreadHandler extends HandlerThread {
                 handleUncaughtException(throwable);
             }
         });
-        dispatcher = new Dispatcher(this, modulesProvider.androidLogger);
-        configurationProvider = modulesProvider.configurationProvider();
+        dispatcher = new AtnDispatcher(this, modulesProvider.androidLogger, "kin");
+        orbsDispatcher = new OrbsDispatcher(this, modulesProvider.androidLogger, "orbs");
+        this.modulesProvider = modulesProvider;
     }
 
     private void handleUncaughtException(Throwable throwable) {
-        isBusy = false;
         eventLogger.sendErrorEvent("uncaught_exception", throwable);
-    }
-
-    private class ATNHandler extends Handler {
-
-        ATNHandler(Looper looper) {
-            super(looper);
+        if (handler != null) {
+            handler.handleUncaughtException();
         }
-
-        @Override
-        public void handleMessage(Message msg) {
-            isBusy = true;
-            switch (msg.what) {
-                case Dispatcher.MSG_RECEIVE:
-                    if (sessionCreated) {
-                        sessionCreator.getATNReceiver().receiveATN();
-                        updateRateLimit();
-                    }
-                    break;
-                case Dispatcher.MSG_SENT:
-                    if (sessionCreated) {
-                        sessionCreator.getATNSender().sendATN();
-                        updateRateLimit();
-                    } else {
-                        sessionCreated = sessionCreator.create();
-                        updateRateLimit();
-                    }
-                    break;
-            }
-            isBusy = false;
-        }
-
-    }
-
-    private void updateRateLimit() {
-        Config lastConfig = configurationProvider.getLastConfig();
-        dispatcher.setRateLimit(lastConfig.getTransactionRateLimit());
     }
 
     @Override
     public synchronized void start() {
         super.start();
 
-        handler = new ATNHandler(getLooper());
+        handler = new ATNHandler(sessionCreator, orbsSession, dispatcher, orbsDispatcher,
+                modulesProvider.configurationProvider(), modulesProvider.androidLogger(),
+                extractPublicAddress(), getLooper());
     }
 
-    boolean isBusy() {
-        return isBusy;
+    private String extractPublicAddress() {
+        KinAccount kinAccount = modulesProvider.kinAccountCreator().getAccount();
+        if (kinAccount != null) {
+            return kinAccount.getPublicAddress();
+        } else {
+            return "";
+        }
+    }
+
+    boolean isAtnBusy() {
+        return handler.isAtnBusy();
+    }
+
+    boolean isOrbsBusy() {
+        return handler.isOrbsBusy();
     }
 
     Handler getHandler() {
@@ -95,4 +81,7 @@ class ATNThreadHandler extends HandlerThread {
         return dispatcher;
     }
 
+    Dispatcher getOrbsDispatcher() {
+        return orbsDispatcher;
+    }
 }

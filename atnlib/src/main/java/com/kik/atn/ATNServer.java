@@ -24,6 +24,7 @@ class ATNServer {
     private static final String URL_CREATE_ACCOUNT = "accounts/%s";
     private static final String URL_FUND = "accounts/%s/fundings";
     private static final String URL_CLAIM_ATN = "accounts/%s/claims";
+    private static final String URL_CLAIM_ORBS = "orbs/accounts/%s/claims";
     private static final String URL_SEND_EVENT = "events";
     private static final String URL_GET_CONFIGURATION = "accounts/%s/config";
     private final OkHttpClient okHttpClient;
@@ -41,15 +42,19 @@ class ATNServer {
     }
 
     void fundWithXLM(String publicAddress) throws IOException {
-        sendPublicAddressRequest(publicAddress, "", URL_CREATE_ACCOUNT);
+        sendPublicAddressRequest(publicAddress, URL_CREATE_ACCOUNT);
     }
 
     void fundWithATN(String publicAddress) throws IOException {
-        sendPublicAddressRequest(publicAddress, "", URL_FUND);
+        sendPublicAddressRequest(publicAddress, URL_FUND);
     }
 
     void receiveATN(String publicAddress) throws IOException {
-        sendPublicAddressRequest(publicAddress, "", URL_CLAIM_ATN);
+        sendPublicAddressRequest(publicAddress, URL_CLAIM_ATN);
+    }
+
+    void receiveOrbs(String publicAddress) throws IOException {
+        sendPublicAddressRequest(publicAddress, URL_CLAIM_ORBS);
     }
 
     void sendEvent(Event event) throws IOException {
@@ -57,9 +62,9 @@ class ATNServer {
         sendPostRequest(json, URL_SEND_EVENT);
     }
 
-    private void sendPublicAddressRequest(String publicAddress, String requestContent, String urlFormat) throws IOException {
+    private void sendPublicAddressRequest(String publicAddress, String urlFormat) throws IOException {
         String url = String.format(urlFormat, publicAddress);
-        sendPostRequest(requestContent, url);
+        sendPostRequest("", url);
     }
 
     @NonNull
