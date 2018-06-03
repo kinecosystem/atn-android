@@ -11,6 +11,7 @@ import kin.core.exception.CreateAccountException;
 class KinAccountCreatorImpl implements KinAccountCreator {
 
     private static final String ASSET_CODE_ATN = "ATN";
+    private static final String KIN_CLIENT_STORE_KEY = "atnlib";
     private final String NETWORK_ID = "private testnet";
     private static final String ASSET_ISSUER = "GCAUZH5OGE4HU4NZPBXX67A66D6DVR2IIZMT2BU635UN5PJXWUPUO3A7";
     private static final String HORIZON_ENDPOINT = "https://horizon-kik.kininfrastructure.com";
@@ -53,6 +54,6 @@ class KinAccountCreatorImpl implements KinAccountCreator {
                     protected String getIssuerAccountId() {
                         return ASSET_ISSUER;
                     }
-                });
+                }, KIN_CLIENT_STORE_KEY);
     }
 }
