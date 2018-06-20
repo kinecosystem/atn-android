@@ -32,6 +32,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -128,8 +129,10 @@ public class IntegrationTests {
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         // 2 calls - atnHandler init and atnSessionCreator
         verify(mockKinAccount, timeout(1000).times(2)).getPublicAddress();
+        //part of session creation
         verify(mockKinAccount, timeout(1000).times(1)).getBalanceSync();
-        verify(mockKinAccount, timeout(1000).times(1)).sendTransactionSync(anyString(), (BigDecimal) any());
+        //tx for each sent message
+        verify(mockKinAccount, timeout(1000).times(2)).sendTransactionSync(anyString(), (BigDecimal) any());
         verifyNoMoreInteractions(mockKinAccount);
     }
 
@@ -236,7 +239,7 @@ public class IntegrationTests {
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
 
         InOrder inOrder = inOrder(mockKinAccount, mockATNServer);
-        inOrder.verify(mockKinAccount, timeout(1000).times(1))
+        inOrder.verify(mockKinAccount, timeout(1000).times(2))
                 .sendTransactionSync(anyString(), (BigDecimal) any());
         inOrder.verify(mockATNServer, timeout(1000).times(1))
                 .receiveATN(PUBLIC_ADDRESS);
@@ -271,6 +274,9 @@ public class IntegrationTests {
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         sleep(1010);
+
+        verify(mockKinAccount, timeout(1000).times(1))
+                .sendTransactionSync(anyString(), (BigDecimal) any());
 
         atn.onMessageSent(InstrumentationRegistry.getTargetContext());
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
@@ -320,7 +326,7 @@ public class IntegrationTests {
         //first message onboarding
         inOrder.verify(mockKinAccount).getBalanceSync();
         //second message send atn
-        inOrder.verify(mockKinAccount).sendTransactionSync(anyString(), (BigDecimal) any());
+        inOrder.verify(mockKinAccount, times(2)).sendTransactionSync(anyString(), (BigDecimal) any());
         //third message no onboarding
         inOrder.verify(mockKinAccount, never()).getBalanceSync();
     }

@@ -13,6 +13,7 @@ import org.robolectric.RobolectricTestRunner;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -132,9 +133,43 @@ public class ATNHandlerTest {
 
         verifyBusyIsFalse();
         verify(atnSession).create();
-        verify(atnSession).sendATN();
+        verify(atnSession, times(2)).sendATN();
         verifyZeroInteractions(orbsSession);
         verifyRateLimitUpdate();
+    }
+
+    @Test
+    public void sent_SessionCreatedAndSendAtn() throws Exception {
+        Config config = new Config(true, ATN_TARGET_ADDRESS, 3,
+                new Config.Orbs(false, 3, ORBS_TARGET_ADDRESS));
+        mockReturnedConfig(config);
+        mockSessionCreated(true);
+
+        atnHandler.handleMessage(createMessage(Dispatcher.MSG_SENT));
+        verifyBusyIsFalse();
+
+        verifyBusyIsFalse();
+        verify(atnSession).create();
+        verify(atnSession).sendATN();
+        verifyZeroInteractions(orbsSession);
+        verifyRateLimitUpdate(1);
+    }
+
+    @Test
+    public void sent_SessionNotCreated_NoSendATN() throws Exception {
+        Config config = new Config(true, ATN_TARGET_ADDRESS, 3,
+                new Config.Orbs(false, 3, ORBS_TARGET_ADDRESS));
+        mockReturnedConfig(config);
+        mockSessionCreated(false);
+
+        atnHandler.handleMessage(createMessage(Dispatcher.MSG_SENT));
+        verifyBusyIsFalse();
+
+        verifyBusyIsFalse();
+        verify(atnSession).create();
+        verify(atnSession, never()).sendATN();
+        verifyZeroInteractions(orbsSession);
+        verifyRateLimitUpdate(1);
     }
 
     @Test
@@ -222,8 +257,12 @@ public class ATNHandlerTest {
     }
 
     private void verifyRateLimitUpdate() {
-        verify(dispatcher, times(2)).setRateLimit(3);
-        verify(orbsDispatcher, times(2)).setRateLimit(3);
+        verifyRateLimitUpdate(2);
+    }
+
+    private void verifyRateLimitUpdate(int numberOfUpdated) {
+        verify(dispatcher, times(numberOfUpdated)).setRateLimit(3);
+        verify(orbsDispatcher, times(numberOfUpdated)).setRateLimit(3);
     }
 
     private void verifyBusyIsFalse() {
