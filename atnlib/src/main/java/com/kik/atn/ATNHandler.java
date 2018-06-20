@@ -89,7 +89,10 @@ class ATNHandler extends Handler {
             atnSession.sendATN();
             updateRateLimit();
         } else {
-            atnSession.create();
+            boolean created = atnSession.create();
+            if (created) {
+                atnSession.sendATN();
+            }
             updateRateLimit();
         }
     }

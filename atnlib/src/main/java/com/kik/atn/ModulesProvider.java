@@ -5,13 +5,14 @@ import android.content.Context;
 
 abstract class ModulesProvider {
 
-    protected ATNServer atnServer;
-    protected AndroidLogger androidLogger;
-    protected EventLogger eventLogger;
-    protected ConfigurationProvider configurationProvider;
-    protected ATNAccountOnBoarding onboarding;
-    protected KinAccountCreator kinAccountCreator;
-    protected OrbsWallet orbsWallet;
+    ATNServer atnServer;
+    AndroidLogger androidLogger;
+    EventLogger eventLogger;
+    ConfigurationProvider configurationProvider;
+    ATNAccountOnBoarding onboarding;
+    KinAccountCreator kinAccountCreator;
+    OrbsWallet orbsWallet;
+    Store store;
 
     ModulesProvider(Context context) {
         inject(context);
@@ -41,6 +42,10 @@ abstract class ModulesProvider {
 
     ATNAccountOnBoarding accountOnboarding() {
         return onboarding;
+    }
+
+    public Store getStore() {
+        return store;
     }
 
     public OrbsWallet getOrbsWallet() {

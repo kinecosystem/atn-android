@@ -35,8 +35,8 @@ class ATNThreadHandler extends HandlerThread {
                 handleUncaughtException(throwable);
             }
         });
-        dispatcher = new AtnDispatcher(this, modulesProvider.androidLogger, "kin");
-        orbsDispatcher = new OrbsDispatcher(this, modulesProvider.androidLogger, "orbs");
+        dispatcher = new AtnDispatcher(this, modulesProvider.androidLogger, modulesProvider.getStore(), "kin");
+        orbsDispatcher = new OrbsDispatcher(this, modulesProvider.androidLogger, modulesProvider.getStore(), "orbs");
         this.modulesProvider = modulesProvider;
     }
 

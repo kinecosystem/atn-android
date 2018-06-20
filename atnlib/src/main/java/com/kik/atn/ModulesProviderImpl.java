@@ -13,12 +13,13 @@ class ModulesProviderImpl extends ModulesProvider {
 
     @Override
     protected void inject(Context context) {
+        this.store = new LocalStore(context);
         this.atnServer = new ATNServer(new ATNServerURLProvider());
         this.androidLogger = new AndroidLogger();
-        this.eventLogger = new EventLogger(atnServer, androidLogger, new LocalStore(context), false);
+        this.eventLogger = new EventLogger(atnServer, androidLogger, store, false);
         this.configurationProvider = new ConfigurationProvider(atnServer, eventLogger, MIN_UPDATE_INTERVAL_MILLIS);
         this.onboarding = new ATNAccountOnBoarding(eventLogger, atnServer);
         this.kinAccountCreator = new KinAccountCreatorImpl(context, eventLogger);
-        this.orbsWallet = new OrbsWallet(new LocalStore(context), new OrbsNodeUrlProvider());
+        this.orbsWallet = new OrbsWallet(store, new OrbsNodeUrlProvider());
     }
 }

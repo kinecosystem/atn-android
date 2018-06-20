@@ -9,22 +9,20 @@ class EventLogger {
     private final static String KEY_DEVICE_ID = "device_id";
     private final ATNServer server;
     private final AndroidLogger androidLogger;
-    private final LocalStore localStore;
     private final boolean localOnly;
     private final String deviceId;
     private String publicAddress;
     private String orbsPublicAddress;
 
-    EventLogger(ATNServer server, AndroidLogger androidLogger, LocalStore localStore, boolean localOnly) {
+    EventLogger(ATNServer server, AndroidLogger androidLogger, Store store, boolean localOnly) {
         this.server = server;
         this.androidLogger = androidLogger;
-        this.localStore = localStore;
         this.localOnly = localOnly;
 
-        String deviceId = localStore.getString(KEY_DEVICE_ID);
+        String deviceId = store.getString(KEY_DEVICE_ID);
         if (deviceId == null) {
             deviceId = UUID.randomUUID().toString();
-            localStore.saveString(KEY_DEVICE_ID, deviceId);
+            store.saveString(KEY_DEVICE_ID, deviceId);
         }
         this.deviceId = deviceId;
     }

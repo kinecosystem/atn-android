@@ -8,4 +8,8 @@ interface Store {
 
     @Nullable
     String getString(String key);
+
+    void saveLong(String key, long data);
+
+    long getLong(String key);
 }
