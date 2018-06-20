@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -56,7 +58,8 @@ public class IntegrationTests {
         mockWebServer = new MockWebServer();
         mockServerUrl = mockWebServer.url("").toString();
         TestModulesProvider modulesProvider = new TestModulesProvider(appContext, mockServerUrl, mockKinAccount);
-
+        //clear data - important for resetting dispatcher last allowed time.
+        modulesProvider.getStore().clearAll();
         atn = new ATN(modulesProvider);
     }
 
@@ -180,11 +183,7 @@ public class IntegrationTests {
 
     @Test
     public void onMessageReceived() throws Exception {
-        ATNServer mockATNServer = mock(ATNServer.class);
-        TestModulesProvider modulesProvider = new TestModulesProvider(InstrumentationRegistry.getTargetContext(), mockServerUrl, mockKinAccount,
-                mockATNServer);
-
-        atn = new ATN(modulesProvider);
+        ATNServer mockATNServer = initAtnWithMockAtnServer();
 
         mockAlreadyOnBoarded();
 
@@ -201,11 +200,7 @@ public class IntegrationTests {
 
     @Test
     public void sentAndReceived() throws Exception {
-        ATNServer mockATNServer = mock(ATNServer.class);
-        TestModulesProvider modulesProvider = new TestModulesProvider(InstrumentationRegistry.getTargetContext(), mockServerUrl, mockKinAccount,
-                mockATNServer);
-
-        atn = new ATN(modulesProvider);
+        ATNServer mockATNServer = initAtnWithMockAtnServer();
 
         mockAlreadyOnBoarded();
         mockConfiguration(true, false); //for send transaction request
@@ -228,11 +223,7 @@ public class IntegrationTests {
 
     @Test
     public void receivedAndSent() throws Exception {
-        ATNServer mockATNServer = mock(ATNServer.class);
-        TestModulesProvider modulesProvider = new TestModulesProvider(InstrumentationRegistry.getTargetContext(), mockServerUrl, mockKinAccount,
-                mockATNServer);
-
-        atn = new ATN(modulesProvider);
+        ATNServer mockATNServer = initAtnWithMockAtnServer();
 
         mockAlreadyOnBoarded();
         mockConfiguration(true, false); //for send transaction request
@@ -251,13 +242,18 @@ public class IntegrationTests {
                 .receiveATN(PUBLIC_ADDRESS);
     }
 
-    @Test
-    public void rateLimit() throws Exception {
+    private ATNServer initAtnWithMockAtnServer() {
         ATNServer mockATNServer = mock(ATNServer.class);
         TestModulesProvider modulesProvider = new TestModulesProvider(InstrumentationRegistry.getTargetContext(), mockServerUrl, mockKinAccount,
                 mockATNServer);
 
         atn = new ATN(modulesProvider);
+        return mockATNServer;
+    }
+
+    @Test
+    public void rateLimit() throws Exception {
+        ATNServer mockATNServer = initAtnWithMockAtnServer();
         mockConfiguration(true, false);
         when(mockKinAccount.getBalanceSync()).thenReturn(new Balance() {
             @Override
@@ -288,6 +284,45 @@ public class IntegrationTests {
         atn.onMessageReceived(InstrumentationRegistry.getTargetContext());
         verify(mockATNServer, timeout(1000).times(1))
                 .receiveATN(PUBLIC_ADDRESS);
+    }
+
+    @Test
+    public void rateLimit_BetweenSession_RateLimitSaved() throws Exception {
+        ATNServer mockATNServer = initAtnWithMockAtnServer();
+        mockConfiguration(true, false);
+        when(mockKinAccount.getBalanceSync()).thenReturn(new Balance() {
+            @Override
+            public BigDecimal value() {
+                return new BigDecimal(10);
+            }
+
+            @Override
+            public String value(int precision) {
+                return "10.0";
+            }
+        });
+
+        mockConfiguration(true, false); //for send transaction request
+
+        //session start
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+        sleep(1010);
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+
+        //create new instance and verify persisted rate limit will prevent onboarding from happening
+        initAtnWithMockAtnServer();
+
+        atn.onMessageSent(InstrumentationRegistry.getTargetContext());
+
+        sleep(1010);
+
+        InOrder inOrder = Mockito.inOrder(mockKinAccount);
+        //first message onboarding
+        inOrder.verify(mockKinAccount).getBalanceSync();
+        //second message send atn
+        inOrder.verify(mockKinAccount).sendTransactionSync(anyString(), (BigDecimal) any());
+        //third message no onboarding
+        inOrder.verify(mockKinAccount, never()).getBalanceSync();
     }
 
 }

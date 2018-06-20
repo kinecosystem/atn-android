@@ -228,5 +228,14 @@ public class OrbsWalletTest {
         public String getString(String key) {
             return map.get(key);
         }
+
+        @Override
+        public void saveLong(String key, long data) {
+        }
+
+        @Override
+        public long getLong(String key) {
+            return 0;
+        }
     }
 }

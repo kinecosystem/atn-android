@@ -14,10 +14,13 @@ abstract class Dispatcher {
     static final int MSG_SENT = 1;
     static final int MSG_RECEIVE_ORBS = 2;
     static final int MSG_SENT_ORBS = 3;
+    private static final String KEY_LAST_ALLOWED_TIME = "key_last_allowed_time";
     private static final long DEFAULT_DELAY = 5000;
-    protected final ATNThreadHandler handler;
+    final ATNThreadHandler handler;
+    private final String keyLastAllowedTime;
     private final AndroidLogger logger;
     private final String dispatcherName;
+    private final Store store;
     private long rateLimitInMillis;
     private long lastAllowedTime;
 
@@ -26,11 +29,14 @@ abstract class Dispatcher {
     @interface MessageType {
     }
 
-    Dispatcher(ATNThreadHandler threadHandler, AndroidLogger logger, String dispatcherName) {
+    Dispatcher(ATNThreadHandler threadHandler, AndroidLogger logger, Store store, String dispatcherName) {
         this.handler = threadHandler;
         this.logger = logger;
         this.dispatcherName = dispatcherName;
         this.rateLimitInMillis = DEFAULT_DELAY;
+        this.store = store;
+        keyLastAllowedTime = KEY_LAST_ALLOWED_TIME + dispatcherName;
+        lastAllowedTime = store.getLong(keyLastAllowedTime);
     }
 
     synchronized void dispatch(@MessageType int msg) {
@@ -52,6 +58,7 @@ abstract class Dispatcher {
             return false;
         }
         lastAllowedTime = System.currentTimeMillis();
+        store.saveLong(keyLastAllowedTime, lastAllowedTime);
         return true;
     }
 

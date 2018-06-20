@@ -23,6 +23,7 @@ class TestModulesProvider extends ModulesProvider {
 
     @Override
     protected void inject(Context context) {
+        this.store = new TestStore(context);
         this.androidLogger = new AndroidLogger();
         if (this.atnServer == null) {
             this.atnServer = new ATNServer(new ATNServerURLProvider() {
@@ -32,7 +33,7 @@ class TestModulesProvider extends ModulesProvider {
                 }
             });
         }
-        this.eventLogger = new EventLogger(atnServer, androidLogger, new LocalStore(context), true);
+        this.eventLogger = new EventLogger(atnServer, androidLogger, store, true);
         this.configurationProvider = new ConfigurationProvider(atnServer, eventLogger, 10000);
         this.onboarding = new ATNAccountOnBoarding(eventLogger, atnServer);
         this.kinAccountCreator = new KinAccountCreator() {
@@ -42,5 +43,10 @@ class TestModulesProvider extends ModulesProvider {
                 return account;
             }
         };
+    }
+
+    @Override
+    public TestStore getStore() {
+        return (TestStore) super.getStore();
     }
 }
