@@ -63,11 +63,6 @@ public class ATNHandlerTest {
         testDisabledByConfiguration(Dispatcher.MSG_SENT_ORBS, Dispatcher.MSG_SENT_ORBS);
     }
 
-    @Test
-    public void sentAndReceiveOrbs_Disabled_NoOpJustLog() throws Exception {
-        testDisabledByConfiguration(Dispatcher.MSG_SENT_ORBS, Dispatcher.MSG_RECEIVE_ORBS);
-    }
-
     private void testDisabledByConfiguration(int firstMessage, int secondMessage) {
         Config config = new Config(false, ATN_TARGET_ADDRESS, 3,
                 new Config.Orbs(false, 3, ""));
@@ -102,24 +97,6 @@ public class ATNHandlerTest {
     }
 
     @Test
-    public void sentX2Orbs_SessionNotCreated_RetryNoSendReceive() throws Exception {
-        Config config = new Config(true, ATN_TARGET_ADDRESS, 3,
-                new Config.Orbs(true, 3, ORBS_TARGET_ADDRESS));
-        mockReturnedConfig(config);
-        mockOrbsSessionCreated(false);
-
-        atnHandler.handleMessage(createMessage(Dispatcher.MSG_SENT_ORBS));
-        verifyBusyIsFalse();
-        atnHandler.handleMessage(createMessage(Dispatcher.MSG_SENT_ORBS));
-        verifyBusyIsFalse();
-
-        verify(orbsSession, times(2)).create();
-        verifyZeroInteractions(atnSession);
-        verifyRateLimitUpdate();
-
-    }
-
-    @Test
     public void sentX2_SessionCreated_SendAtn() throws Exception {
         Config config = new Config(true, ATN_TARGET_ADDRESS, 3,
                 new Config.Orbs(false, 3, ORBS_TARGET_ADDRESS));
@@ -138,24 +115,6 @@ public class ATNHandlerTest {
     }
 
     @Test
-    public void sentX2Orbs_SessionCreated_SendOrbs() throws Exception {
-        Config config = new Config(true, ATN_TARGET_ADDRESS, 3,
-                new Config.Orbs(true, 3, ORBS_TARGET_ADDRESS));
-        mockReturnedConfig(config);
-        mockOrbsSessionCreated(true);
-
-        atnHandler.handleMessage(createMessage(Dispatcher.MSG_SENT_ORBS));
-        verifyBusyIsFalse();
-        atnHandler.handleMessage(createMessage(Dispatcher.MSG_SENT_ORBS));
-
-        verifyBusyIsFalse();
-        verify(orbsSession).create();
-        verify(orbsSession).sendOrbs();
-        verifyZeroInteractions(atnSession);
-        verifyRateLimitUpdate();
-    }
-
-    @Test
     public void sentAndReceive_SessionCreated_ReceiveAtn() throws Exception {
         Config config = new Config(true, ATN_TARGET_ADDRESS, 3,
                 new Config.Orbs(false, 3, ORBS_TARGET_ADDRESS));
@@ -170,24 +129,6 @@ public class ATNHandlerTest {
         verify(atnSession).create();
         verify(atnSession).receiveATN();
         verifyZeroInteractions(orbsSession);
-        verifyRateLimitUpdate();
-    }
-
-    @Test
-    public void sentAndReceiveOrbs_SessionCreated_ReceiveOrbs() throws Exception {
-        Config config = new Config(true, ATN_TARGET_ADDRESS, 3,
-                new Config.Orbs(true, 3, ORBS_TARGET_ADDRESS));
-        mockReturnedConfig(config);
-        mockOrbsSessionCreated(true);
-
-        atnHandler.handleMessage(createMessage(Dispatcher.MSG_SENT_ORBS));
-        verifyBusyIsFalse();
-        atnHandler.handleMessage(createMessage(Dispatcher.MSG_RECEIVE_ORBS));
-
-        verifyBusyIsFalse();
-        verify(orbsSession).create();
-        verify(orbsSession).receiveOrbs();
-        verifyZeroInteractions(atnSession);
         verifyRateLimitUpdate();
     }
 
