@@ -67,7 +67,7 @@ class Config {
         }
 
         boolean isEnabled() {
-            return enabled;
+            return false;
         }
 
         int getTransactionRateLimit() {
